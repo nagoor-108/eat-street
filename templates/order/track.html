@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Track Order #{{ order.order_number }} — Eat Street{% endblock %}
+{% block content %}
+<div style="padding-top:90px;min-height:100vh">
+  <div class="container" style="max-width:600px;padding-top:2rem;padding-bottom:4rem">
+    <h1 style="font-size:1.5rem;font-weight:800;margin-bottom:0.5rem">Order Tracking</h1>
+    <div style="color:var(--text-muted);font-size:0.875rem;margin-bottom:2rem">#{{ order.order_number }}</div>
+    <!-- Status Progress -->
+    <div class="card" style="padding:1.5rem;margin-bottom:1.5rem">
+      <div style="display:flex;flex-direction:column;gap:0">
+        {% set statuses = ['PENDING','ACCEPTED','PREPARING','READY','DELIVERED'] %}
+        {% for st in statuses %}
+          {% set is_done = order.status in statuses and statuses.index(order.status) >= loop.index0 %}
+        {% set is_current = order.status == st %}
+        <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem 0">
+          <div style="width:36px;height:36px;border-radius:50%;background:{{ 'var(--primary)' if is_done else 'var(--bg-surface)' }};border:2px solid {{ 'var(--primary)' if is_done else 'var(--border)' }};display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;transition:all 0.3s">
+            {{ '✓' if is_done else '○' }}
+          </div>
+          <div>
+            <div style="font-weight:{{ '700' if is_current else '500' }};font-size:0.9rem;color:{{ 'var(--text)' if is_done else 'var(--text-muted)' }}">{{ st }}</div>
+            {% if is_current %}<div style="font-size:0.75rem;color:var(--primary)">← Current Status</div>{% endif %}
+          </div>
+        </div>
+        {% if not loop.last %}
+        <div style="width:2px;height:20px;background:{{ 'var(--primary)' if is_done else 'var(--border)' }};margin-left:17px"></div>
+        {% endif %}
+        {% endfor %}
+        {% if order.status == 'CANCELLED' %}
+        <div style="margin-top:0.75rem;padding:0.75rem;border-radius:8px;background:rgba(239,83,80,0.12);color:#EF5350;font-size:0.85rem">
+          This order was cancelled.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <!-- Order Details -->
+    <div class="card" style="padding:1.5rem">
+      <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:1rem">Order Details</h3>
+      {% for oi in order.items %}
+      <div class="cart-total-row" style="font-size:0.85rem">
+        <span style="color:var(--text-muted)">{{ oi.menu_item.name }} × {{ oi.quantity }}</span>
+        <span>₹{{ oi.total_price|int }}</span>
+      </div>
+      {% endfor %}
+      <div class="cart-total-row grand">
+        <span>Total Paid</span>
+        <span style="color:var(--primary)">₹{{ order.total_amount|int }}</span>
+      </div>
+      <div style="margin-top:1rem;font-size:0.82rem;color:var(--text-muted)">
+        <div>Type: <strong>{{ order.order_type }}</strong></div>
+        <div>Payment: <strong>{{ order.payment_method|upper }}</strong></div>
+        <div>Shop: <strong>{{ order.shop.name }}</strong></div>
+      </div>
+    </div>
+    <a href="{{ url_for('home.index') }}" class="btn btn-glass w-100" style="margin-top:1rem">
+      <i class="ri-home-line"></i> Back to Home
+    </a>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Poll for status updates
+setInterval(() => {
+  fetch('/orders/status/{{ order.order_number }}')
+    .then(r => r.json())
+    .then(d => {
+      if (d.status !== '{{ order.status }}') location.reload();
+    });
+}, 10000);
+</script>
+{% endblock %}

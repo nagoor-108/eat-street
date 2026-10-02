@@ -1,0 +1,1088 @@
+{% extends "base.html" %}
+{% block title %}Checkout — Eat Street{% endblock %}
+{% block content %}
+<!-- DEMO ONLY — NO REAL PAYMENT IS PROCESSED. -->
+<div style="padding-top:90px;min-height:100vh">
+  <div class="container" style="max-width:850px;padding-top:2rem;padding-bottom:4rem">
+    <div style="margin-bottom:2rem">
+      <a href="{{ url_for('orders.cart') }}" style="color:var(--text-muted);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem;margin-bottom:0.75rem">
+        <i class="ri-arrow-left-line"></i> Back to Cart
+      </a>
+      <h1 style="font-size:1.6rem;font-weight:800">📦 Checkout</h1>
+      <p style="color:var(--text-muted);font-size:0.875rem;margin-top:0.3rem">Complete your order details</p>
+    </div>
+
+    <form id="checkoutForm" method="POST" style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div>
+        <!-- Logged in Customer Info -->
+        <div class="card" style="padding:1rem 1.25rem;margin-bottom:1.25rem;background:rgba(0,230,118,0.06);border:1px solid rgba(0,230,118,0.25);border-radius:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem">
+          <div style="display:flex;align-items:center;gap:0.75rem">
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(0,230,118,0.15);color:#00e676;display:flex;align-items:center;justify-content:center;font-size:1.2rem">
+              <i class="ri-user-smile-line"></i>
+            </div>
+            <div>
+              <div style="font-weight:700;font-size:0.95rem;color:#fff">{{ current_user.name }}</div>
+              <div style="font-size:0.78rem;color:var(--text-muted)">{{ current_user.email }} {% if current_user.phone %}• {{ current_user.phone }}{% endif %}</div>
+            </div>
+          </div>
+          <span class="badge" style="background:rgba(0,230,118,0.15);color:#00e676;border:1px solid rgba(0,230,118,0.3);font-size:0.75rem;padding:3px 10px;border-radius:12px;font-weight:700">
+            <i class="ri-checkbox-circle-fill"></i> Verified Customer
+          </span>
+        </div>
+
+        <!-- Order Type Selector -->
+        <div class="card" style="padding:1.25rem;margin-bottom:1.25rem">
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.4rem">
+            <span>🛵</span> 1. Select Fulfillment Mode
+          </h3>
+          <div style="display:flex;gap:0.75rem">
+            <label style="flex:1;cursor:pointer">
+              <input type="radio" name="order_type" value="TAKEAWAY" checked style="display:none" id="ot-tak">
+              <div class="order-mode-btn active" id="btn-tak" onclick="selectOrderMode('TAKEAWAY')" style="padding:1rem;border:2px solid var(--primary);background:rgba(255,59,0,0.1);border-radius:12px;text-align:center;transition:all 0.2s">
+                <div style="font-size:1.75rem;margin-bottom:0.25rem">🥡</div>
+                <div style="font-weight:700;font-size:0.95rem">Takeaway / Pickup</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">Pick up directly from stall</div>
+              </div>
+            </label>
+
+            <label style="flex:1;cursor:pointer">
+              <input type="radio" name="order_type" value="DELIVERY" style="display:none" id="ot-del">
+              <div class="order-mode-btn" id="btn-del" onclick="selectOrderMode('DELIVERY')" style="padding:1rem;border:2px solid var(--border);background:var(--bg-surface);border-radius:12px;text-align:center;transition:all 0.2s">
+                <div style="font-size:1.75rem;margin-bottom:0.25rem">🛵</div>
+                <div style="font-weight:700;font-size:0.95rem">Doorstep Delivery</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">Delivered across Kakinada</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Delivery Address -->
+        <div class="card" style="padding:1.25rem;margin-bottom:1.25rem;display:none" id="addressSection">
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.4rem">
+            <span>📍</span> Delivery Address <span style="color:var(--primary)">*</span>
+          </h3>
+          <div class="form-group">
+            <label class="form-label">Full Address & Landmarks</label>
+            <textarea name="address" id="addressInput" class="form-control" rows="3" placeholder="Door No, Street Name, Area (e.g. Rama Rao Peta, Bhanugudi Junction), Kakinada 533001"></textarea>
+          </div>
+        </div>
+
+        <!-- Takeaway Pickup Time -->
+        <div class="card" style="padding:1.25rem;margin-bottom:1.25rem" id="pickupSection">
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.4rem">
+            <span>⏰</span> Preferred Pickup Time
+          </h3>
+          <div class="form-group">
+            <label class="form-label">Estimated Pickup Time</label>
+            <input type="time" name="pickup_time" class="form-control" value="19:30">
+            <small style="color:var(--text-muted);font-size:0.75rem;margin-top:4px;display:block">Average preparation time is 15–20 minutes.</small>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="card" style="padding:1.25rem;margin-bottom:1.25rem">
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.4rem">
+            <span>💳</span> 2. Payment Method
+          </h3>
+          <div style="display:flex;flex-direction:column;gap:0.6rem">
+            {% for pm, icon, title, subtitle in [
+              ('cash', '💵', 'Cash on Delivery / Counter Pay', 'Pay with cash upon delivery or pickup'),
+              ('upi', '📱', 'UPI / QR Payment (GPay, PhonePe, Paytm)', 'Scan & pay on arrival or delivery'),
+              ('card', '💳', 'Credit / Debit Card', 'Card swipe accepted at the stalls')
+            ] %}
+            <label class="payment-method-option" style="display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.2s">
+              <input type="radio" name="payment_method" value="{{ pm }}" {{ 'checked' if pm=='cash' else '' }}>
+              <span style="font-size:1.25rem">{{ icon }}</span>
+              <div style="flex:1">
+                <div style="font-weight:700;font-size:0.9rem">{{ title }}</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">{{ subtitle }}</div>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Special Instructions -->
+        <div class="card" style="padding:1.25rem;margin-bottom:1.25rem">
+          <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.4rem">
+            <span>📝</span> Special Kitchen Instructions
+          </h3>
+          <textarea name="special_note" class="form-control" rows="2" placeholder="e.g. Extra spicy, less oil, pack chutney separately…"></textarea>
+        </div>
+
+        <!-- Demo Transaction History Section -->
+        <div class="card" style="padding:1.25rem">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.85rem">
+            <div>
+              <h3 style="font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.4rem">
+                <span>📜</span> Demo Transaction History
+              </h3>
+              <div style="font-size:0.75rem;color:var(--text-muted)">Simulated payment transactions recorded for this session</div>
+            </div>
+            <button type="button" onclick="clearDemoTransactionHistory()" class="btn btn-glass btn-sm" style="font-size:0.72rem;padding:0.3rem 0.6rem">
+              <i class="ri-delete-bin-line"></i> Clear
+            </button>
+          </div>
+          <div id="demoTxnHistoryList">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary Card -->
+      <div style="position:sticky;top:90px">
+        <div class="card" style="padding:1.5rem">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem">Order Summary</h3>
+
+          <!-- Breakdown by Shop -->
+          <div style="display:flex;flex-direction:column;gap:0.85rem;margin-bottom:1rem">
+            {% for shop, items in grouped_by_shop.items() %}
+            <div style="background:var(--bg-surface);padding:0.75rem;border-radius:8px;border:1px solid var(--border)">
+              <div style="font-size:0.82rem;font-weight:700;color:var(--gold);margin-bottom:0.4rem;display:flex;align-items:center;gap:0.3rem">
+                <span>🏪</span> {{ shop.name }}
+              </div>
+              {% for item in items %}
+              <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-muted);margin-bottom:0.25rem">
+                <span>{{ item.menu_item.name }} × {{ item.quantity }}</span>
+                <span style="color:#fff;font-weight:600">₹{{ (item.menu_item.price * item.quantity)|int }}</span>
+              </div>
+              {% endfor %}
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="cart-total-row" style="display:flex;justify-content:space-between;font-size:0.88rem;margin-bottom:0.5rem">
+            <span style="color:var(--text-muted)">Stalls</span>
+            <span style="font-weight:700">{{ grouped_by_shop|length }}</span>
+          </div>
+
+          <div class="cart-total-row" style="display:flex;justify-content:space-between;font-size:0.88rem;margin-bottom:0.5rem">
+            <span style="color:var(--text-muted)">Taxes & Packaging</span>
+            <span style="color:#4caf50;font-weight:600">Included</span>
+          </div>
+
+          <hr style="border:0;border-top:1px solid var(--border);margin:0.75rem 0">
+
+          <div class="cart-total-row grand" style="display:flex;justify-content:space-between;font-size:1.2rem;font-weight:800;margin-bottom:1.25rem">
+            <span>Total Payable</span>
+            <span style="color:var(--primary)">₹<span id="displayTotalPayable">{{ total|int }}</span></span>
+          </div>
+
+          <button type="submit" id="placeOrderBtn" class="btn btn-primary w-100 btn-lg" style="display:flex;align-items:center;justify-content:center;gap:0.5rem">
+            <i class="ri-check-line"></i> Place Order Now
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- DEMO PAYMENT MODALS (DEMO ONLY — NO REAL PAYMENT PROCESSED)            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="demoModalBackdrop" class="demo-modal-backdrop" style="display:none">
+
+  <!-- 1. DEMO UPI PAYMENT MODAL -->
+  <div id="demoUpiModal" class="demo-modal" style="display:none">
+    <div class="demo-modal-header">
+      <div style="display:flex;align-items:center;gap:0.5rem">
+        <span style="font-size:1.3rem">📱</span>
+        <h3 style="font-size:1.15rem;font-weight:700">Demo UPI Payment</h3>
+      </div>
+      <button type="button" class="demo-modal-close" onclick="closeDemoModals()"><i class="ri-close-line"></i></button>
+    </div>
+    
+    <div class="demo-disclaimer-badge">
+      <i class="ri-information-line"></i> DEMO ONLY — NO REAL PAYMENT IS PROCESSED
+    </div>
+
+    <div class="demo-amount-card">
+      <span style="color:var(--text-muted);font-size:0.85rem">Amount Payable</span>
+      <span class="demo-amount-value">₹<span class="dynamic-pay-amount">{{ total|int }}</span></span>
+    </div>
+
+    <!-- High-fidelity realistic Demo QR Code with uploaded Paytm QR -->
+    <div class="demo-qr-box" style="padding:1rem;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;margin-bottom:1.25rem">
+      <!-- Payee Info Header -->
+      <div style="display:flex;align-items:center;gap:0.75rem;padding:0.6rem 0.75rem;background:#111;border-radius:10px;border:1px solid var(--border);width:100%;margin-bottom:0.75rem">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--primary);flex-shrink:0">
+          👤
+        </div>
+        <div style="flex:1;min-width:0;line-height:1.25">
+          <div style="font-weight:700;font-size:0.88rem;color:#fff;display:flex;align-items:center;gap:0.3rem">
+            <span>Kasani Tejeswar Goud</span>
+            <span style="color:#00baf2;font-size:0.85rem" title="Verified UPI Profile">✔️</span>
+          </div>
+          <div style="font-size:0.72rem;color:var(--text-muted);font-family:monospace;letter-spacing:0.3px;margin-top:2px">
+            UPI: 6303632598@ptaxis <span style="color:var(--gold);font-size:0.65rem;font-weight:700">(DEMO)</span>
+          </div>
+        </div>
+        <div style="font-weight:800;font-size:0.85rem;color:#00baf2;letter-spacing:0.5px">Paytm</div>
+      </div>
+
+      <!-- QR Frame with Uploaded QR Image -->
+      <div class="demo-qr-frame" style="position:relative;background:#fff;padding:8px;border-radius:14px;border:3px solid #00baf2;box-shadow:0 0 20px rgba(0,186,242,0.25);max-width:210px;margin:0 auto">
+        <img src="{{ url_for('static', filename='images/demo_qr_code.png') }}"
+             alt="Demo UPI QR Code"
+             style="width:100%;height:auto;display:block;border-radius:8px">
+        <div class="demo-qr-center-badge" style="background:#111;border:1.5px solid #00baf2;color:#00baf2">
+          <span>DEMO UPI</span>
+        </div>
+      </div>
+
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-top:0.75rem;text-align:center">
+        Scan with GPay / PhonePe / Paytm to simulate demo payment
+      </p>
+    </div>
+
+    <!-- UPI App Simulator Options -->
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:600">Simulate UPI App:</div>
+      <div class="demo-app-grid">
+        <button type="button" class="demo-app-btn active" onclick="selectUpiApp('Paytm Demo', this)">
+          <span style="font-size:1.1rem">🔷</span> Paytm Demo
+        </button>
+        <button type="button" class="demo-app-btn" onclick="selectUpiApp('GPay Demo', this)">
+          <span style="font-size:1.1rem">🔵</span> GPay Demo
+        </button>
+        <button type="button" class="demo-app-btn" onclick="selectUpiApp('PhonePe Demo', this)">
+          <span style="font-size:1.1rem">🟣</span> PhonePe Demo
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Actions -->
+    <div style="display:flex;flex-direction:column;gap:0.6rem">
+      <button type="button" class="btn btn-primary w-100" onclick="simulatePaymentAction('success', currentUpiApp)">
+        <i class="ri-checkbox-circle-line"></i> Simulate Successful Payment
+      </button>
+      <button type="button" class="btn btn-outline-danger w-100" onclick="simulatePaymentAction('failure', currentUpiApp)">
+        <i class="ri-close-circle-line"></i> Simulate Payment Failure
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. DEMO CARD PAYMENT MODAL -->
+  <div id="demoCardModal" class="demo-modal" style="display:none">
+    <div class="demo-modal-header">
+      <div style="display:flex;align-items:center;gap:0.5rem">
+        <span style="font-size:1.3rem">💳</span>
+        <h3 style="font-size:1.15rem;font-weight:700">Demo Card Payment</h3>
+      </div>
+      <button type="button" class="demo-modal-close" onclick="closeDemoModals()"><i class="ri-close-line"></i></button>
+    </div>
+
+    <div class="demo-disclaimer-badge">
+      <i class="ri-information-line"></i> DEMO ONLY — NO REAL PAYMENT IS PROCESSED
+    </div>
+
+    <div class="demo-amount-card">
+      <span style="color:var(--text-muted);font-size:0.85rem">Amount Payable</span>
+      <span class="demo-amount-value">₹<span class="dynamic-pay-amount">{{ total|int }}</span></span>
+    </div>
+
+    <!-- Realistic Visual Card Preview -->
+    <div class="demo-card-preview">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+        <div class="demo-card-chip"></div>
+        <div style="font-size:1.2rem;opacity:0.8;color:#fff"><i class="ri-wireless-charging-line"></i></div>
+      </div>
+      <div class="demo-card-num-display" id="demoCardNumDisplay">4532 •••• •••• 8899</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:0.85rem">
+        <div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.6);text-transform:uppercase">Card Holder</div>
+          <div style="font-size:0.85rem;font-weight:700;color:#fff" id="demoCardNameDisplay">DEMO USER</div>
+        </div>
+        <div>
+          <div style="font-size:0.65rem;color:rgba(255,255,255,0.6);text-transform:uppercase">Expires</div>
+          <div style="font-size:0.85rem;font-weight:700;color:#fff" id="demoCardExpDisplay">12/28</div>
+        </div>
+        <div style="font-weight:800;font-style:italic;font-size:1rem;letter-spacing:1px;color:#FFB300">VISA</div>
+      </div>
+    </div>
+
+    <!-- Demo Form Inputs -->
+    <div style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.25rem">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" style="font-size:0.75rem">Cardholder Name</label>
+        <input type="text" class="form-control demo-input" id="demoCardNameInput" value="DEMO USER" placeholder="e.g. JOHN DOE" oninput="updateDemoCardPreview()">
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label" style="font-size:0.75rem">Card Number</label>
+        <input type="text" class="form-control demo-input" id="demoCardNumInput" value="4532 8900 1234 8899" placeholder="4532 •••• •••• 8899" maxlength="19" oninput="updateDemoCardPreview()">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" style="font-size:0.75rem">Expiry Date</label>
+          <input type="text" class="form-control demo-input" id="demoCardExpInput" value="12/28" placeholder="MM/YY" maxlength="5" oninput="updateDemoCardPreview()">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label" style="font-size:0.75rem">CVV</label>
+          <input type="password" class="form-control demo-input" id="demoCardCvvInput" value="888" placeholder="•••" maxlength="4">
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="display:flex;flex-direction:column;gap:0.6rem">
+      <button type="button" class="btn btn-primary w-100" onclick="simulatePaymentAction('success', 'Credit / Debit Card')">
+        <i class="ri-checkbox-circle-line"></i> Simulate Successful Payment
+      </button>
+      <button type="button" class="btn btn-outline-danger w-100" onclick="simulatePaymentAction('failure', 'Credit / Debit Card')">
+        <i class="ri-close-circle-line"></i> Simulate Payment Failure
+      </button>
+    </div>
+  </div>
+
+  <!-- 3. PROCESSING ANIMATION OVERLAY -->
+  <div id="demoProcessingModal" class="demo-modal demo-processing-modal" style="display:none;text-align:center">
+    <div class="demo-spinner"></div>
+    <h3 style="font-size:1.2rem;font-weight:700;margin-top:1.25rem;margin-bottom:0.3rem">Processing Payment...</h3>
+    <p id="demoProcessingSubtext" style="color:var(--text-muted);font-size:0.85rem">Connecting to simulated payment gateway...</p>
+    <div class="demo-progress-bar"><div class="demo-progress-fill"></div></div>
+    <div style="font-size:0.75rem;color:var(--primary);margin-top:1rem;font-weight:600">
+      ⚡ DEMO TRANSACTION IN PROGRESS
+    </div>
+  </div>
+
+  <!-- 4. SUCCESS SCREEN MODAL -->
+  <div id="demoSuccessModal" class="demo-modal" style="display:none">
+    <div class="demo-status-icon success">
+      <i class="ri-check-line"></i>
+    </div>
+    <h3 style="font-size:1.35rem;font-weight:800;color:#fff;text-align:center;margin-bottom:0.2rem">Payment Successful</h3>
+    <p style="color:var(--text-muted);font-size:0.875rem;text-align:center;margin-bottom:1.25rem">Your order has been placed successfully.</p>
+
+    <div class="demo-receipt-card">
+      <div class="demo-receipt-row">
+        <span>Transaction ID</span>
+        <span class="val mono" id="resTxnId">DEMO-TXN-12345678</span>
+      </div>
+      <div class="demo-receipt-row">
+        <span>Amount Paid</span>
+        <span class="val" style="color:var(--primary);font-size:1.05rem;font-weight:800">₹<span id="resAmount">{{ total|int }}</span></span>
+      </div>
+      <div class="demo-receipt-row">
+        <span>Payment Method</span>
+        <span class="val" id="resMethod">UPI / QR Payment</span>
+      </div>
+      <div class="demo-receipt-row">
+        <span>Order ID</span>
+        <span class="val mono" id="resOrderId">DEMO-ORD-894210</span>
+      </div>
+      <div class="demo-receipt-row">
+        <span>Date & Time</span>
+        <span class="val" id="resDateTime">18 Sep 2026, 9:10 PM</span>
+      </div>
+      <div class="demo-receipt-row">
+        <span>Status</span>
+        <span class="val"><span class="badge-success-tag">✓ Successful</span></span>
+      </div>
+    </div>
+
+    <div class="demo-disclaimer-alert success">
+      <i class="ri-shield-check-line"></i> DEMO TRANSACTION — NO REAL PAYMENT WAS PROCESSED
+    </div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+      <a href="{{ url_for('orders.my_orders') }}" class="btn btn-primary" style="flex:1;justify-content:center">
+        <i class="ri-shopping-bag-3-line"></i> View Order
+      </a>
+      <a href="{{ url_for('shops.list_shops') }}" class="btn btn-glass" style="flex:1;justify-content:center">
+        <i class="ri-store-2-line"></i> Continue Shopping
+      </a>
+    </div>
+  </div>
+
+  <!-- 5. FAILURE SCREEN MODAL -->
+  <div id="demoFailureModal" class="demo-modal" style="display:none">
+    <div class="demo-status-icon failure">
+      <i class="ri-close-line"></i>
+    </div>
+    <h3 style="font-size:1.35rem;font-weight:800;color:#fff;text-align:center;margin-bottom:0.2rem">Payment Failed</h3>
+    <p style="color:var(--text-muted);font-size:0.875rem;text-align:center;margin-bottom:1.25rem">Demo transaction was unsuccessful.</p>
+
+    <div class="demo-receipt-card">
+      <div class="demo-receipt-row">
+        <span>Transaction ID</span>
+        <span class="val mono" id="failTxnId">DEMO-TXN-12345678</span>
+      </div>
+      <div class="demo-receipt-row">
+        <span>Amount</span>
+        <span class="val">₹<span id="failAmount">{{ total|int }}</span></span>
+      </div>
+      <div class="demo-receipt-row">
+        <span>Payment Method</span>
+        <span class="val" id="failMethod">UPI</span>
+      </div>
+      <div class="demo-receipt-row">
+        <span>Status</span>
+        <span class="val"><span class="badge-failure-tag">✕ Failed</span></span>
+      </div>
+    </div>
+
+    <div class="demo-disclaimer-alert failure">
+      <i class="ri-error-warning-line"></i> DEMO TRANSACTION — NO REAL PAYMENT WAS PROCESSED
+    </div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:1.25rem">
+      <button type="button" class="btn btn-primary" style="flex:1;justify-content:center" onclick="retryPayment()">
+        <i class="ri-refresh-line"></i> Try Again
+      </button>
+      <button type="button" class="btn btn-glass" style="flex:1;justify-content:center" onclick="closeDemoModals()">
+        <i class="ri-close-line"></i> Cancel
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ EMBEDDED DEMO PAYMENT STYLES ═══════════════════════════════════════ -->
+<style>
+/* Modal backdrop and card containers */
+.demo-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: demoFadeIn 0.25s ease-out;
+}
+.demo-modal {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.85), 0 0 30px rgba(255,59,0,0.15);
+  animation: demoSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.demo-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.demo-modal-close {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  transition: all 0.2s;
+}
+.demo-modal-close:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.15);
+}
+
+/* Disclaimer Badges */
+.demo-disclaimer-badge {
+  background: rgba(255, 179, 0, 0.12);
+  border: 1px solid rgba(255, 179, 0, 0.3);
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+.demo-disclaimer-alert {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+.demo-disclaimer-alert.success {
+  background: rgba(76, 175, 80, 0.12);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: #81c784;
+}
+.demo-disclaimer-alert.failure {
+  background: rgba(244, 67, 54, 0.12);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  color: #e57373;
+}
+
+/* Amount Banner */
+.demo-amount-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+}
+.demo-amount-value {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+/* QR Code Box */
+.demo-qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+.demo-qr-frame {
+  position: relative;
+  background: #111;
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 59, 0, 0.35);
+  box-shadow: 0 0 20px rgba(255, 59, 0, 0.15);
+}
+.demo-qr-center-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #111;
+  border: 1.5px solid var(--primary);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.8);
+}
+
+/* UPI App Grid */
+.demo-app-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.demo-app-btn {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.5rem 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  transition: all 0.2s;
+}
+.demo-app-btn.active {
+  border-color: var(--primary);
+  color: #fff;
+  background: rgba(255, 59, 0, 0.12);
+}
+
+/* Card Preview */
+.demo-card-preview {
+  background: linear-gradient(135deg, #1f1b2c 0%, #302b48 50%, #171520 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 0 15px rgba(255,255,255,0.05);
+  margin-bottom: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.demo-card-chip {
+  width: 34px;
+  height: 26px;
+  background: linear-gradient(135deg, #e6c875, #c29d38);
+  border-radius: 5px;
+  border: 1px solid rgba(0,0,0,0.2);
+}
+.demo-card-num-display {
+  font-family: monospace;
+  font-size: 1.05rem;
+  letter-spacing: 2px;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Inputs in Demo Card */
+.demo-input {
+  background: var(--bg-surface) !important;
+  border: 1px solid var(--border) !important;
+  color: #fff !important;
+  font-size: 0.85rem !important;
+  padding: 0.55rem 0.75rem !important;
+  border-radius: 8px !important;
+}
+.demo-input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(255,59,0,0.2) !important;
+}
+
+/* Buttons */
+.btn-outline-danger {
+  background: transparent;
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  color: #ff5252;
+  font-weight: 600;
+}
+.btn-outline-danger:hover {
+  background: rgba(244, 67, 54, 0.1);
+  border-color: #ff5252;
+  color: #ff5252;
+}
+
+/* Spinner and Animation Overlays */
+.demo-spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 59, 0, 0.15);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: demoSpin 0.9s linear infinite;
+  margin: 0.5rem auto 0 auto;
+}
+.demo-progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 1.25rem;
+}
+.demo-progress-fill {
+  width: 30%;
+  height: 100%;
+  background: var(--primary);
+  animation: demoProgress 1.4s ease-in-out infinite alternate;
+}
+
+/* Status Icons */
+.demo-status-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0.5rem auto 1rem auto;
+}
+.demo-status-icon.success {
+  background: rgba(76, 175, 80, 0.15);
+  border: 2px solid #4caf50;
+  color: #4caf50;
+  box-shadow: 0 0 25px rgba(76, 175, 80, 0.35);
+  animation: demoPulseSuccess 1.5s ease-out infinite;
+}
+.demo-status-icon.failure {
+  background: rgba(244, 67, 54, 0.15);
+  border: 2px solid #f44336;
+  color: #f44336;
+  box-shadow: 0 0 25px rgba(244, 67, 54, 0.35);
+}
+
+/* Receipt Cards */
+.demo-receipt-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.demo-receipt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.demo-receipt-row .val {
+  color: #fff;
+  font-weight: 600;
+  text-align: right;
+}
+.demo-receipt-row .val.mono {
+  font-family: monospace;
+  letter-spacing: 0.5px;
+}
+.badge-success-tag {
+  background: rgba(76, 175, 80, 0.15);
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+.badge-failure-tag {
+  background: rgba(244, 67, 54, 0.15);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* Transaction History Table */
+.demo-history-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.demo-history-table th {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+.demo-history-table td {
+  padding: 0.6rem 0.6rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: #eee;
+}
+
+@keyframes demoFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes demoSlideUp { from { opacity: 0; transform: translateY(20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes demoSpin { to { transform: rotate(360deg); } }
+@keyframes demoProgress { from { width: 10%; transform: translateX(0); } to { width: 70%; transform: translateX(50%); } }
+@keyframes demoPulseSuccess { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ═══════════════════════════════════════════════════════════════════════
+   DEMO TRANSACTION & CHECKOUT ENGINE
+   DEMO ONLY — NO REAL PAYMENT IS PROCESSED.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+let currentUpiApp = 'Paytm Demo';
+let lastSimulatedMethod = 'UPI (Paytm Demo)';
+const TOTAL_AMOUNT = {{ total|int }};
+
+// ─── 1. FULFILLMENT MODE SELECTOR ───────────────────────────────────────────
+function selectOrderMode(mode) {
+  const isDel = mode === 'DELIVERY';
+  document.getElementById('ot-del').checked = isDel;
+  document.getElementById('ot-tak').checked = !isDel;
+
+  const btnDel = document.getElementById('btn-del');
+  const btnTak = document.getElementById('btn-tak');
+
+  if (isDel) {
+    btnDel.style.borderColor = 'var(--primary)';
+    btnDel.style.background = 'rgba(255,59,0,0.1)';
+    btnTak.style.borderColor = 'var(--border)';
+    btnTak.style.background = 'var(--bg-surface)';
+    document.getElementById('addressSection').style.display = 'block';
+    document.getElementById('pickupSection').style.display = 'none';
+    document.getElementById('addressInput').required = true;
+  } else {
+    btnTak.style.borderColor = 'var(--primary)';
+    btnTak.style.background = 'rgba(255,59,0,0.1)';
+    btnDel.style.borderColor = 'var(--border)';
+    btnDel.style.background = 'var(--bg-surface)';
+    document.getElementById('addressSection').style.display = 'none';
+    document.getElementById('pickupSection').style.display = 'block';
+    document.getElementById('addressInput').required = false;
+  }
+}
+
+// ─── 2. UPI APP SELECTOR ──────────────────────────────────────────────────
+function selectUpiApp(appName, btn) {
+  currentUpiApp = appName;
+  document.querySelectorAll('.demo-app-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+// ─── 3. CARD PREVIEW LIVE UPDATER ─────────────────────────────────────────
+function updateDemoCardPreview() {
+  const nameInp = document.getElementById('demoCardNameInput');
+  const numInp = document.getElementById('demoCardNumInput');
+  const expInp = document.getElementById('demoCardExpInput');
+
+  const nameDisp = document.getElementById('demoCardNameDisplay');
+  const numDisp = document.getElementById('demoCardNumDisplay');
+  const expDisp = document.getElementById('demoCardExpDisplay');
+
+  if (nameDisp) nameDisp.textContent = (nameInp.value.trim() || 'DEMO USER').toUpperCase();
+  if (expDisp) expDisp.textContent = expInp.value.trim() || '12/28';
+
+  if (numDisp) {
+    let raw = numInp.value.replace(/\D/g, '');
+    if (!raw) {
+      numDisp.textContent = '4532 •••• •••• 8899';
+    } else {
+      let parts = raw.match(/.{1,4}/g) || [];
+      numDisp.textContent = parts.join(' ');
+    }
+  }
+}
+
+// ─── 4. OPEN / CLOSE MODALS ───────────────────────────────────────────────
+function closeDemoModals() {
+  const backdrop = document.getElementById('demoModalBackdrop');
+  if (backdrop) backdrop.style.display = 'none';
+  document.querySelectorAll('.demo-modal').forEach(m => m.style.display = 'none');
+}
+
+function openModal(modalId) {
+  const backdrop = document.getElementById('demoModalBackdrop');
+  if (backdrop) backdrop.style.display = 'flex';
+  document.querySelectorAll('.demo-modal').forEach(m => m.style.display = 'none');
+  const modal = document.getElementById(modalId);
+  if (modal) modal.style.display = 'block';
+}
+
+function retryPayment() {
+  if (lastSimulatedMethod.includes('Card')) {
+    openModal('demoCardModal');
+  } else if (lastSimulatedMethod.includes('UPI') || lastSimulatedMethod.includes('Pay')) {
+    openModal('demoUpiModal');
+  } else {
+    closeDemoModals();
+  }
+}
+
+// ─── 5. FORM SUBMISSION INTERCEPTOR ───────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const form = document.getElementById('checkoutForm');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Check delivery address validation
+      const isDel = document.getElementById('ot-del').checked;
+      const addr = document.getElementById('addressInput').value.trim();
+      if (isDel && !addr) {
+        alert('Please enter a delivery address to proceed.');
+        document.getElementById('addressInput').focus();
+        return;
+      }
+
+      const selectedPm = document.querySelector('input[name="payment_method"]:checked')?.value || 'cash';
+
+      if (selectedPm === 'upi') {
+        lastSimulatedMethod = 'UPI / QR Payment';
+        openModal('demoUpiModal');
+      } else if (selectedPm === 'card') {
+        lastSimulatedMethod = 'Credit / Debit Card';
+        openModal('demoCardModal');
+      } else {
+        // Cash on Delivery
+        lastSimulatedMethod = 'Cash on Delivery';
+        simulatePaymentAction('success', 'Cash on Delivery', true);
+      }
+    });
+  }
+
+  // Load existing demo transaction history
+  renderDemoHistory();
+});
+
+// ─── 6. SIMULATE PAYMENT ACTION (SUCCESS / FAILURE) ────────────────────────
+async function simulatePaymentAction(outcome, methodLabel, isCod = false) {
+  lastSimulatedMethod = methodLabel;
+  const form = document.getElementById('checkoutForm');
+  const formData = new FormData(form);
+
+  // 1. Show Processing Screen
+  openModal('demoProcessingModal');
+  const subtext = document.getElementById('demoProcessingSubtext');
+  if (subtext) {
+    subtext.textContent = isCod ? 'Creating your order with stalls...' : `Connecting to simulated ${methodLabel} gateway...`;
+  }
+
+  const txnId = 'DEMO-TXN-' + Math.floor(10000000 + Math.random() * 90000000);
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' +
+                  now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+  if (outcome === 'success') {
+    let orderId = 'DEMO-ORD-' + Math.floor(100000 + Math.random() * 900000);
+
+    try {
+      // POST order data to server asynchronously so database orders are placed and cart is cleared
+      const res = await fetch('{{ url_for("orders.checkout") }}', {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.order_numbers && data.order_numbers.length > 0) {
+          orderId = data.order_numbers.map(n => '#' + n).join(', ');
+        }
+      }
+    } catch (_) {
+      // Fallback simulated order ID
+    }
+
+    // Wait simulated 1.4s processing delay for realistic demo experience
+    setTimeout(() => {
+      // Record transaction
+      saveTransaction({
+        orderId: orderId,
+        txnId: txnId,
+        amount: TOTAL_AMOUNT,
+        method: methodLabel,
+        dateTime: dateStr,
+        status: 'Successful'
+      });
+
+      // Populate Success Screen
+      document.getElementById('resTxnId').textContent = txnId;
+      document.getElementById('resAmount').textContent = TOTAL_AMOUNT;
+      document.getElementById('resMethod').textContent = methodLabel;
+      document.getElementById('resOrderId').textContent = orderId;
+      document.getElementById('resDateTime').textContent = dateStr;
+
+      openModal('demoSuccessModal');
+    }, 1400);
+
+  } else {
+    // Failure simulation
+    setTimeout(() => {
+      saveTransaction({
+        orderId: 'N/A',
+        txnId: txnId,
+        amount: TOTAL_AMOUNT,
+        method: methodLabel,
+        dateTime: dateStr,
+        status: 'Failed'
+      });
+
+      document.getElementById('failTxnId').textContent = txnId;
+      document.getElementById('failAmount').textContent = TOTAL_AMOUNT;
+      document.getElementById('failMethod').textContent = methodLabel;
+
+      openModal('demoFailureModal');
+    }, 1200);
+  }
+}
+
+// ─── 7. TRANSACTION HISTORY STATE (LOCAL STORAGE) ──────────────────────────
+function getStoredTransactions() {
+  try {
+    return JSON.parse(localStorage.getItem('eatstreet_demo_transactions') || '[]');
+  } catch (_) {
+    return [];
+  }
+}
+
+function saveTransaction(txn) {
+  const list = getStoredTransactions();
+  list.unshift(txn);
+  try {
+    localStorage.setItem('eatstreet_demo_transactions', JSON.stringify(list.slice(0, 15)));
+  } catch (_) {}
+  renderDemoHistory();
+}
+
+function clearDemoTransactionHistory() {
+  try {
+    localStorage.removeItem('eatstreet_demo_transactions');
+  } catch (_) {}
+  renderDemoHistory();
+}
+
+function renderDemoHistory() {
+  const container = document.getElementById('demoTxnHistoryList');
+  if (!container) return;
+
+  const list = getStoredTransactions();
+  if (list.length === 0) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:1.25rem 0.5rem;color:var(--text-muted);font-size:0.8rem">
+        <i class="ri-history-line" style="font-size:1.5rem;display:block;margin-bottom:0.3rem;opacity:0.6"></i>
+        No simulated transactions recorded yet. Place an order or simulate payment above.
+      </div>
+    `;
+    return;
+  }
+
+  let html = `
+    <div style="overflow-x:auto">
+      <table class="demo-history-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Txn ID</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Date & Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+  `;
+
+  list.forEach(item => {
+    const isSuccess = item.status === 'Successful';
+    const statusBadge = isSuccess
+      ? `<span class="badge-success-tag">✓ Success</span>`
+      : `<span class="badge-failure-tag">✕ Failed</span>`;
+
+    html += `
+      <tr>
+        <td style="font-family:monospace;font-weight:700;color:${isSuccess ? 'var(--gold)' : 'var(--text-muted)'}">${item.orderId}</td>
+        <td style="font-family:monospace;font-size:0.72rem;color:var(--text-muted)">${item.txnId}</td>
+        <td style="font-weight:700;color:var(--primary)">₹${item.amount}</td>
+        <td>${item.method}</td>
+        <td style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap">${item.dateTime}</td>
+        <td>${statusBadge}</td>
+      </tr>
+    `;
+  });
+
+  html += `
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  container.innerHTML = html;
+}
+</script>
+{% endblock %}

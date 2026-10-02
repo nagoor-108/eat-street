@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment variables & secrets (Protects SMTP credentials and Secret Keys)
+.env
+.env.local
+.env.*.local
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Database & SQLite files
+*.sqlite3
+*.db
+instance/
+eatstreet.db
+
+# Scratch and temporary files
+scratch_out.html
+*.tmp
+
+# Uploads
+static/uploads/*
+!static/uploads/.gitkeep
+
+# OS generated files
+.DS_Store
+Thumbs.db

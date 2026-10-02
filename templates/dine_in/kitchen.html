@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Kitchen Display — {{ shop.name }}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block content %}
+<div style="padding-top:70px;background:var(--bg);min-height:100vh">
+  <!-- KDS Header -->
+  <div style="background:var(--bg-card);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:70px;z-index:50">
+    <div>
+      <h1 style="font-size:1.2rem;font-weight:800">👨‍🍳 Kitchen Display</h1>
+      <div style="font-size:0.8rem;color:var(--text-muted)">{{ shop.name }} · Auto-refreshes every 15s</div>
+    </div>
+    <div style="display:flex;gap:0.75rem;align-items:center">
+      <div style="display:flex;gap:0.5rem">
+        <span class="badge badge-pending">⏳ Pending</span>
+        <span class="badge badge-preparing">🔥 Preparing</span>
+        <span class="badge badge-ready">✅ Ready</span>
+      </div>
+      <button class="btn btn-glass btn-sm" onclick="loadOrders()"><i class="ri-refresh-line"></i> Refresh</button>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:1.5rem;padding-bottom:3rem">
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:1.5rem;align-items:start">
+
+      <!-- Kitchen Orders Grid -->
+      <div>
+        <div id="ordersGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem">
+          {% if kitchen_orders %}
+            {% for ko in kitchen_orders %}
+            <div class="kitchen-card status-{{ ko.status|lower }}" id="ko-{{ ko.id }}">
+              <div class="kitchen-card-header">
+                <div>
+                  <span style="font-weight:700;font-size:0.9rem">#{{ ko.order.order_number }}</span>
+                  <span class="badge badge-{{ ko.order.order_type|lower|replace('_','-') }}" style="margin-left:0.5rem">
+                    {{ '🛵' if ko.order.order_type=='DELIVERY' else ('🥡' if ko.order.order_type=='TAKEAWAY' else '🍽️') }}
+                    {{ ko.order.order_type }}
+                  </span>
+                </div>
+                <div style="text-align:right">
+                  {% if ko.order.table %}
+                  <div style="font-size:0.78rem;font-weight:700;color:var(--gold)">Table {{ ko.order.table.table_number }}</div>
+                  {% endif %}
+                  <div style="font-size:0.72rem;color:var(--text-muted)">{{ ko.created_at.strftime('%H:%M') }}</div>
+                </div>
+              </div>
+              <div class="kitchen-card-body">
+                {% for oi in ko.order.items %}
+                <div class="kitchen-item-row">
+                  <span>{{ oi.menu_item.name }}</span>
+                  <span class="kitchen-item-qty">× {{ oi.quantity }}</span>
+                </div>
+                {% endfor %}
+                {% if ko.order.special_note %}
+                <div style="margin-top:0.5rem;padding:0.4rem 0.6rem;background:rgba(255,179,0,0.08);border-radius:6px;font-size:0.75rem;color:var(--gold)">
+                  📝 {{ ko.order.special_note }}
+                </div>
+                {% endif %}
+              </div>
+              <div class="kitchen-actions">
+                {% if ko.status == 'PENDING' %}
+                <button class="btn btn-warning btn-sm w-100" onclick="updateStatus({{ ko.id }}, 'ACCEPTED')">✔ Accept</button>
+                {% elif ko.status == 'ACCEPTED' %}
+                <button class="btn btn-primary btn-sm w-100" onclick="updateStatus({{ ko.id }}, 'PREPARING')">🔥 Start Preparing</button>
+                {% elif ko.status == 'PREPARING' %}
+                <button class="btn btn-success btn-sm w-100" onclick="updateStatus({{ ko.id }}, 'READY')">✅ Mark Ready</button>
+                {% elif ko.status == 'READY' %}
+                <button class="btn btn-glass btn-sm w-100" onclick="updateStatus({{ ko.id }}, 'SERVED')">🍽️ Served</button>
+                {% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div id="emptyKitchen" style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-muted)">
+            <div style="font-size:4rem;margin-bottom:1rem">👨‍🍳</div>
+            <h3>No active orders</h3>
+            <p style="font-size:0.875rem;margin-top:0.5rem">New orders will appear here automatically.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Waiter Requests Sidebar -->
+      <div style="position:sticky;top:140px">
+        <div class="card" style="padding:1.25rem">
+          <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:1rem">🔔 Table Requests</h3>
+          <div id="waiterRequestsList">
+            {% if waiter_requests %}
+              {% for wr in waiter_requests %}
+              <div id="wr-{{ wr.id }}" style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem;background:var(--bg-surface);border-radius:8px;margin-bottom:0.5rem;border:1px solid var(--border)">
+                <div>
+                  <div style="font-size:0.85rem;font-weight:600">
+                    {{ {'WAITER':'🔔 Waiter','WATER':'💧 Water','BILL':'🧾 Bill','CLEANING':'🧹 Clean'}[wr.request_type] }}
+                  </div>
+                  <div style="font-size:0.72rem;color:var(--text-muted)">Table {{ wr.table.table_number }} · {{ wr.created_at.strftime('%H:%M') }}</div>
+                </div>
+                <button class="btn btn-success btn-sm btn-icon" onclick="resolveWaiter({{ wr.id }})" title="Done">
+                  <i class="ri-check-line"></i>
+                </button>
+              </div>
+              {% endfor %}
+            {% else %}
+            <p style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:1rem 0">No pending requests</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="card" style="padding:1.25rem;margin-top:1rem">
+          <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:1rem">📊 Today</h3>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;font-size:0.82rem">
+            <div class="flex-between"><span style="color:var(--text-muted)">Active orders</span><strong>{{ kitchen_orders|length }}</strong></div>
+            <div class="flex-between"><span style="color:var(--text-muted)">Requests</span><strong>{{ waiter_requests|length }}</strong></div>
+          </div>
+        </div>
+
+        <!-- Back to dashboard -->
+        <a href="{{ url_for('vendor.dashboard') }}" class="btn btn-glass w-100" style="margin-top:1rem">
+          <i class="ri-arrow-left-line"></i> Dashboard
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const SHOP_ID = {{ shop.id }};
+
+function updateStatus(koId, status) {
+  fetch('/kitchen/update', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({kitchen_order_id: koId, status})
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      showToast('Order status updated: ' + status, 'success');
+      setTimeout(loadOrders, 500);
+    }
+  });
+}
+
+function resolveWaiter(wrId) {
+  fetch('/kitchen/waiter/done/' + wrId, {method:'POST'})
+    .then(r => r.json()).then(d => {
+      if(d.success) {
+        const el = document.getElementById('wr-' + wrId);
+        if(el) el.remove();
+        showToast('Request resolved ✅', 'success');
+      }
+    });
+}
+
+function loadOrders() {
+  fetch('/kitchen/orders/' + SHOP_ID)
+    .then(r => r.json())
+    .then(orders => {
+      const grid = document.getElementById('ordersGrid');
+      if (!orders.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--text-muted)"><div style="font-size:4rem;margin-bottom:1rem">👨‍🍳</div><h3>No active orders</h3></div>';
+        return;
+      }
+      grid.innerHTML = orders.map(ko => `
+        <div class="kitchen-card status-${ko.status.toLowerCase()}" id="ko-${ko.ko_id}">
+          <div class="kitchen-card-header">
+            <div>
+              <span style="font-weight:700;font-size:0.9rem">#${ko.order_number}</span>
+              <span class="badge badge-${ko.order_type.toLowerCase().replace('_','-')}" style="margin-left:0.5rem">
+                ${ ko.order_type==='DELIVERY'?'🛵':ko.order_type==='TAKEAWAY'?'🥡':'🍽️' } ${ko.order_type}
+              </span>
+            </div>
+            <div style="text-align:right">
+              ${ko.table !== '—' ? `<div style="font-size:0.78rem;font-weight:700;color:var(--gold)">Table ${ko.table}</div>` : ''}
+              <div style="font-size:0.72rem;color:var(--text-muted)">${ko.created_at}</div>
+            </div>
+          </div>
+          <div class="kitchen-card-body">
+            ${ko.items.map(i => `<div class="kitchen-item-row"><span>${i.name}</span><span class="kitchen-item-qty">× ${i.qty}</span></div>`).join('')}
+            ${ko.note ? `<div style="margin-top:0.5rem;padding:0.4rem 0.6rem;background:rgba(255,179,0,0.08);border-radius:6px;font-size:0.75rem;color:var(--gold)">📝 ${ko.note}</div>` : ''}
+          </div>
+          <div class="kitchen-actions">
+            ${ ko.status==='PENDING'   ? `<button class="btn btn-warning btn-sm w-100" onclick="updateStatus(${ko.ko_id},'ACCEPTED')">✔ Accept</button>` :
+               ko.status==='ACCEPTED'  ? `<button class="btn btn-primary btn-sm w-100" onclick="updateStatus(${ko.ko_id},'PREPARING')">🔥 Start Preparing</button>` :
+               ko.status==='PREPARING' ? `<button class="btn btn-success btn-sm w-100" onclick="updateStatus(${ko.ko_id},'READY')">✅ Mark Ready</button>` :
+               ko.status==='READY'     ? `<button class="btn btn-glass btn-sm w-100" onclick="updateStatus(${ko.ko_id},'SERVED')">🍽️ Served</button>` : '' }
+          </div>
+        </div>`).join('');
+    });
+}
+
+// Auto-refresh every 15 seconds
+setInterval(loadOrders, 15000);
+</script>
+{% endblock %}

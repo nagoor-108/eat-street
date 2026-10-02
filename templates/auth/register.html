@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}Register — Eat Street{% endblock %}
+{% block content %}
+<style>
+.auth-card-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5.5rem 1rem 3rem;
+}
+.auth-box {
+  width: 100%;
+  max-width: 440px;
+}
+.input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-icon-wrap .field-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-muted, #888);
+  font-size: 1.15rem;
+  pointer-events: none;
+  z-index: 2;
+}
+.input-icon-wrap .form-control {
+  padding-left: 42px;
+  padding-right: 44px;
+  height: 46px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  width: 100%;
+}
+.pwd-toggle-btn {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #888);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease, transform 0.15s ease;
+  z-index: 2;
+}
+.pwd-toggle-btn:hover {
+  color: var(--primary, #ff3b00);
+  transform: scale(1.1);
+}
+</style>
+
+<div class="auth-card-wrap">
+  <div class="auth-box">
+    <div style="text-align:center;margin-bottom:1.8rem">
+      <div style="font-size:2.8rem;margin-bottom:0.4rem">🎉</div>
+      <h1 style="font-size:1.6rem;font-weight:800;margin-bottom:0.3rem">Join Eat Street</h1>
+      <p style="color:var(--text-muted);font-size:0.875rem">Create your Kakinada Eat Street Account</p>
+    </div>
+
+    <div class="card" style="padding:2rem;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.08)">
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group" style="margin-bottom:1.1rem">
+          <label class="form-label" style="font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;display:block">Full Name</label>
+          <div class="input-icon-wrap">
+            <i class="ri-user-3-line field-icon"></i>
+            <input type="text" name="name" class="form-control" placeholder="Your name" required autocomplete="name">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.1rem">
+          <label class="form-label" style="font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;display:block">Email Address</label>
+          <div class="input-icon-wrap">
+            <i class="ri-mail-line field-icon"></i>
+            <input type="email" name="email" class="form-control" placeholder="your@email.com" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:1.1rem">
+          <label class="form-label" style="font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;display:block">Phone Number</label>
+          <div class="input-icon-wrap">
+            <i class="ri-phone-line field-icon"></i>
+            <input type="tel" name="phone" class="form-control" placeholder="9XXXXXXXXX" autocomplete="tel">
+          </div>
+        </div>
+
+        <!-- Password Field with View Option -->
+        <div class="form-group" style="margin-bottom:1.1rem">
+          <label class="form-label" style="font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;display:block">Password</label>
+          <div class="input-icon-wrap">
+            <i class="ri-lock-password-line field-icon"></i>
+            <input type="password" name="password" id="regPasswordInput" class="form-control" placeholder="Min 8 characters" required autocomplete="new-password">
+            <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('regPasswordInput', 'regPwdEyeIcon')" title="Show/Hide Password" aria-label="Toggle password visibility">
+              <i class="ri-eye-line" id="regPwdEyeIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Confirm Password Field with View Option -->
+        <div class="form-group" style="margin-bottom:1.4rem">
+          <label class="form-label" style="font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;display:block">Confirm Password</label>
+          <div class="input-icon-wrap">
+            <i class="ri-lock-check-line field-icon"></i>
+            <input type="password" name="confirm_password" id="regConfirmPasswordInput" class="form-control" placeholder="Re-enter password" required autocomplete="new-password">
+            <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility('regConfirmPasswordInput', 'regConfirmPwdEyeIcon')" title="Show/Hide Password" aria-label="Toggle password visibility">
+              <i class="ri-eye-line" id="regConfirmPwdEyeIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 btn-lg" style="border-radius:12px;font-weight:700;letter-spacing:0.3px;height:48px;display:flex;align-items:center;justify-content:center;gap:0.5rem">
+          <i class="ri-user-add-line"></i> Create Account
+        </button>
+      </form>
+
+      <div class="divider" style="margin:1.5rem 0;border-top:1px solid rgba(255,255,255,0.08)"></div>
+
+      <p style="text-align:center;font-size:0.88rem;color:var(--text-muted);margin:0">
+        Already have an account? <a href="{{ url_for('auth.login', next=request.args.get('next')) }}" style="color:var(--primary);font-weight:700;text-decoration:none">Sign In</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePasswordVisibility(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
+  if (!input || !icon) return;
+  
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.remove('ri-eye-line');
+    icon.classList.add('ri-eye-off-line');
+  } else {
+    input.type = 'password';
+    icon.classList.remove('ri-eye-off-line');
+    icon.classList.add('ri-eye-line');
+  }
+}
+</script>
+{% endblock %}

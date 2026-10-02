@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Orders — {{ shop.name }}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block content %}
+<div class="vendor-layout">
+  <aside class="vendor-sidebar">
+    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem">
+      <div class="navbar-logo">
+        <div class="logo-icon">🍴</div>
+        <div class="logo-text"><span class="logo-main" style="font-size:0.85rem">DASHBOARD</span><span class="logo-sub">Eat Street</span></div>
+      </div>
+    </div>
+    <p class="sidebar-section-label">{{ shop.name }}</p>
+    <ul class="sidebar-nav">
+      <li><a href="{{ url_for('vendor.dashboard') }}"><i class="ri-dashboard-line"></i> Overview</a></li>
+      <li><a href="{{ url_for('vendor.orders', shop_id=shop.id) }}" class="active"><i class="ri-file-list-3-line"></i> Orders</a></li>
+      <li><a href="{{ url_for('vendor.tables', shop_id=shop.id) }}"><i class="ri-table-line"></i> Tables</a></li>
+      <li><a href="{{ url_for('vendor.menu_manage', shop_id=shop.id) }}"><i class="ri-restaurant-line"></i> Menu</a></li>
+      <li><a href="{{ url_for('kitchen.display', shop_id=shop.id) }}"><i class="ri-fire-line"></i> Kitchen</a></li>
+    </ul>
+  </aside>
+  <main class="vendor-main">
+    <div class="flex-between" style="margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+      <h1 style="font-size:1.25rem;font-weight:800">📦 Orders — {{ shop.name }}</h1>
+      <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+        {% for t in ['','DELIVERY','TAKEAWAY','DINE_IN'] %}
+        <a href="?type={{ t }}" class="btn btn-glass btn-sm {{ 'btn-primary' if request.args.get('type','')==t else '' }}">{{ t or 'All' }}</a>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card" style="overflow:hidden">
+      <div style="overflow-x:auto">
+        <table style="width:100%;font-size:0.82rem;border-collapse:collapse">
+          <thead>
+            <tr style="background:var(--bg-surface);color:var(--text-muted)">
+              <th style="padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)">Order</th>
+              <th style="padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)">Type</th>
+              <th style="padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)">Items</th>
+              <th style="padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)">Amount</th>
+              <th style="padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)">Status</th>
+              <th style="padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)">Time</th>
+              <th style="padding:0.75rem 1rem;text-align:left;border-bottom:1px solid var(--border)">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for order in orders %}
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.04)" id="order-row-{{ order.id }}">
+              <td style="padding:0.7rem 1rem;font-weight:700">#{{ order.order_number }}</td>
+              <td style="padding:0.7rem 1rem">
+                <span class="badge badge-{{ order.order_type|lower|replace('_','-') }}">{{ order.order_type }}</span>
+                {% if order.table %}<div style="font-size:0.72rem;color:var(--gold)">Table {{ order.table.table_number }}</div>{% endif %}
+              </td>
+              <td style="padding:0.7rem 1rem">
+                {% for oi in order.items %}
+                <div>{{ oi.menu_item.name }} × {{ oi.quantity }}</div>
+                {% endfor %}
+              </td>
+              <td style="padding:0.7rem 1rem;font-weight:700;color:var(--primary)">₹{{ order.total_amount|int }}</td>
+              <td style="padding:0.7rem 1rem" id="status-{{ order.id }}">
+                <span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span>
+              </td>
+              <td style="padding:0.7rem 1rem;color:var(--text-muted);font-size:0.75rem">{{ order.created_at.strftime('%d %b %H:%M') }}</td>
+              <td style="padding:0.7rem 1rem">
+                <select class="form-control" style="width:auto;font-size:0.78rem;padding:0.3rem 0.5rem" onchange="changeStatus({{ order.id }}, this.value)">
+                  {% for s in ['PENDING','ACCEPTED','PREPARING','READY','DELIVERED','CANCELLED'] %}
+                  <option value="{{ s }}" {{ 'selected' if order.status==s else '' }}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" style="padding:3rem;text-align:center;color:var(--text-muted)">No orders found</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function changeStatus(orderId, status) {
+  fetch('/vendor/order/update', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({order_id: orderId, status})
+  }).then(r => r.json()).then(d => {
+    if(d.success) showToast('Status updated: ' + status, 'success');
+  });
+}
+</script>
+{% endblock %}

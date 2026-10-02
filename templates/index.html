@@ -1,0 +1,1286 @@
+{% extends "base.html" %}
+{% block title %}@EATSTREET — Kakinada's #1 Food Street{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ══════════════════════════════════════════════════════
+   EATSTREET LANDING PAGE — Clean Video Hero & Animations
+══════════════════════════════════════════════════════ */
+
+/* Reset navbar for this page */
+#navbar { background: transparent !important; box-shadow: none !important; transition: all 0.4s ease; }
+#navbar.scrolled { background: rgba(0,0,0,0.92) !important; backdrop-filter: blur(14px); box-shadow: 0 4px 25px rgba(0,0,0,0.5) !important; }
+
+/* ── KEYFRAME ANIMATIONS ── */
+@keyframes heroFadeUp {
+  0% { opacity: 0; transform: translateY(35px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroFadeDown {
+  0% { opacity: 0; transform: translateY(-25px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 4px 20px rgba(255,59,0,0.35); }
+  50% { box-shadow: 0 8px 35px rgba(255,59,0,0.65), 0 0 15px rgba(255,100,50,0.4); }
+}
+
+@keyframes floatSlow1 {
+  0%, 100% { transform: translateY(0) rotate(var(--rot0, -6deg)); }
+  50% { transform: translateY(-18px) rotate(var(--rot1, 4deg)); }
+}
+
+@keyframes floatSlow2 {
+  0%, 100% { transform: translateY(0) rotate(var(--rot0, 5deg)); }
+  50% { transform: translateY(-22px) rotate(var(--rot1, -4deg)); }
+}
+
+@keyframes phoneFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-12px) rotate(0.8deg); }
+}
+
+@keyframes floatCoin3D {
+  0%, 100% { transform: translateY(0) rotateY(0deg) rotate(0deg); }
+  50% { transform: translateY(-20px) rotateY(180deg) rotate(15deg); }
+}
+
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(7px); }
+}
+
+@keyframes btnShine {
+  0% { left: -100%; }
+  100% { left: 160%; }
+}
+
+@keyframes heroVideoZoom {
+  0% { transform: translate(-50%, -50%) scale(1.02); }
+  50% { transform: translate(-50%, -50%) scale(1.08); }
+  100% { transform: translate(-50%, -50%) scale(1.02); }
+}
+
+/* ── SCROLL REVEAL UTILITIES ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-left.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-right.active {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-scale.active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.delay-1 { transition-delay: 0.1s !important; }
+.delay-2 { transition-delay: 0.2s !important; }
+.delay-3 { transition-delay: 0.3s !important; }
+.delay-4 { transition-delay: 0.4s !important; }
+.delay-5 { transition-delay: 0.5s !important; }
+
+/* Stagger grid items */
+.z-dishes-grid .z-dish-card:nth-child(1) { transition-delay: 0.05s; }
+.z-dishes-grid .z-dish-card:nth-child(2) { transition-delay: 0.1s; }
+.z-dishes-grid .z-dish-card:nth-child(3) { transition-delay: 0.15s; }
+.z-dishes-grid .z-dish-card:nth-child(4) { transition-delay: 0.2s; }
+.z-dishes-grid .z-dish-card:nth-child(5) { transition-delay: 0.25s; }
+.z-dishes-grid .z-dish-card:nth-child(6) { transition-delay: 0.3s; }
+.z-dishes-grid .z-dish-card:nth-child(7) { transition-delay: 0.35s; }
+.z-dishes-grid .z-dish-card:nth-child(8) { transition-delay: 0.4s; }
+
+.z-shop-row .z-scard:nth-child(1) { transition-delay: 0.05s; }
+.z-shop-row .z-scard:nth-child(2) { transition-delay: 0.1s; }
+.z-shop-row .z-scard:nth-child(3) { transition-delay: 0.15s; }
+.z-shop-row .z-scard:nth-child(4) { transition-delay: 0.2s; }
+.z-shop-row .z-scard:nth-child(5) { transition-delay: 0.25s; }
+
+.z-benefits .z-benefit:nth-child(1) { transition-delay: 0.1s; }
+.z-benefits .z-benefit:nth-child(2) { transition-delay: 0.2s; }
+.z-benefits .z-benefit:nth-child(3) { transition-delay: 0.3s; }
+.z-benefits .z-benefit:nth-child(4) { transition-delay: 0.4s; }
+.z-benefits .z-benefit:nth-child(5) { transition-delay: 0.5s; }
+
+.z-feat-col .z-feat-item:nth-child(1) { transition-delay: 0.1s; }
+.z-feat-col .z-feat-item:nth-child(2) { transition-delay: 0.25s; }
+.z-feat-col .z-feat-item:nth-child(3) { transition-delay: 0.4s; }
+
+/* ── 1. HERO — Fullscreen Background Video ── */
+.z-hero {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  background-color: #0d0d0d;
+}
+
+/* Background video */
+.z-hero-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%) scale(1.03);
+  object-fit: cover;
+  z-index: 1;
+  pointer-events: none;
+  filter: brightness(0.78) contrast(1.06) saturate(1.1);
+  animation: heroVideoZoom 24s ease-in-out infinite alternate;
+}
+
+/* Clean transparent gradient overlay */
+.z-hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    radial-gradient(circle at center, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.75) 100%),
+    linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.2) 40%, rgba(10,10,10,0.92) 100%);
+  pointer-events: none;
+}
+
+.z-hero-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 0 1.5rem;
+}
+
+/* Clean typography without backgrounds or box wrappers */
+.z-logo-text {
+  font-size: 2.3rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -1px;
+  font-style: italic;
+  margin-bottom: 1.2rem;
+  animation: heroFadeDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+.z-logo-text span { color: var(--primary); }
+
+.z-hero-title {
+  font-size: clamp(2.4rem, 6vw, 4.8rem);
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.1;
+  margin-bottom: 1.1rem;
+  max-width: 740px;
+  animation: heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.6);
+}
+
+.z-hero-sub {
+  font-size: 1.08rem;
+  color: rgba(255,255,255,0.88);
+  margin-bottom: 2.8rem;
+  max-width: 480px;
+  line-height: 1.65;
+  animation: heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.45s both;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+/* CTA Buttons */
+.z-hero-btns {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 3.2rem;
+  animation: heroFadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
+}
+
+.z-btn-primary {
+  background: var(--primary);
+  color: #fff;
+  padding: 0.95rem 2.4rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 2px solid var(--primary);
+  position: relative;
+  overflow: hidden;
+  animation: pulseGlow 3s infinite ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.z-btn-primary::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transform: skewX(-20deg);
+  transition: transform 0.6s ease;
+}
+
+.z-btn-primary:hover::after {
+  transform: skewX(-20deg) translateX(350%);
+}
+
+.z-btn-primary:hover {
+  background: var(--primary-light);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 30px rgba(255,59,0,0.5);
+}
+
+.z-btn-outline {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  padding: 0.95rem 2.4rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 2px solid rgba(255,255,255,0.6);
+  backdrop-filter: blur(8px);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.z-btn-outline:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: #fff;
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* Scroll down */
+.z-scroll {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  color: rgba(255,255,255,0.7);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: all 0.3s;
+  animation: heroFadeUp 1s ease-out 0.8s both;
+}
+.z-scroll:hover { color: #fff; transform: translateX(-50%) translateY(3px); }
+.z-scroll i { font-size: 1.4rem; animation: scrollBounce 1.5s ease-in-out infinite; }
+
+/* ── 2. FLOATING FOOD SECTION — Clean White ── */
+.z-about {
+  background: #ffffff;
+  color: #222;
+  padding: 7rem 0 5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.z-about-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+/* Floating food images */
+.z-floats {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.z-float {
+  position: absolute;
+  object-fit: cover;
+  border-radius: 24px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.18);
+  transition: transform 0.25s ease-out;
+}
+
+.z-float-1 {
+  width: 160px; height: 160px;
+  left: 5%; top: 15%;
+  animation: floatSlow1 7s ease-in-out infinite;
+}
+
+.z-float-2 {
+  width: 160px; height: 160px;
+  right: 5%; top: 10%;
+  animation: floatSlow2 8s ease-in-out infinite 0.5s;
+}
+
+.z-float-3 {
+  width: 155px; height: 155px;
+  left: 2%; bottom: 10%;
+  animation: floatSlow2 7.5s ease-in-out infinite 1s;
+}
+
+.z-float-4 {
+  width: 165px; height: 165px;
+  right: 3%; bottom: 15%;
+  animation: floatSlow1 8s ease-in-out infinite 1.5s;
+}
+
+.z-about-headline {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  color: var(--primary);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+  max-width: 550px;
+}
+
+.z-about-para {
+  font-size: 1.05rem;
+  color: #555;
+  max-width: 460px;
+  line-height: 1.7;
+  margin-bottom: 3rem;
+}
+
+/* Stats strip */
+.z-stats-strip {
+  background: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 20px;
+  padding: 2rem 3.5rem;
+  display: flex;
+  gap: 4rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  box-shadow: 0 6px 30px rgba(0,0,0,0.04);
+}
+
+.z-stat-item { text-align: center; }
+.z-stat-num {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #222;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.z-stat-icon { font-size: 1.8rem; }
+.z-stat-lbl {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 0.3rem;
+  font-weight: 600;
+}
+
+/* ── 3. SHOPS SECTION ── */
+.z-shops-section {
+  background: linear-gradient(180deg, #fff8f6 0%, #fff 100%);
+  padding: 5rem 0;
+}
+
+.z-section-title {
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  font-weight: 900;
+  color: #222;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+.z-section-title span { color: var(--primary); }
+
+.z-section-sub {
+  text-align: center;
+  color: #777;
+  font-size: 0.95rem;
+  margin-bottom: 3rem;
+}
+
+/* Shop cards */
+.z-shop-row {
+  display: flex;
+  gap: 1.4rem;
+  overflow-x: auto;
+  padding: 0.8rem 1rem 2rem;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: #ffcbc0 transparent;
+}
+.z-shop-row::-webkit-scrollbar { height: 6px; }
+.z-shop-row::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 6px; }
+
+.z-scard {
+  flex: 0 0 250px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 6px 25px rgba(0,0,0,0.06);
+  text-decoration: none;
+  color: inherit;
+  scroll-snap-align: start;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.z-scard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 45px rgba(255,59,0,0.18);
+}
+.z-scard-img { position: relative; height: 160px; overflow: hidden; }
+.z-scard-img img { width:100%;height:100%;object-fit:cover;transition:transform 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+.z-scard:hover .z-scard-img img { transform: scale(1.1); }
+.z-scard-rat {
+  position:absolute;top:10px;right:10px;
+  background:rgba(0,0,0,0.7);color:#FFB300;
+  font-size:0.75rem;font-weight:700;
+  padding:3px 10px;border-radius:20px;backdrop-filter:blur(6px);
+}
+.z-scard-cat {
+  position:absolute;top:10px;left:10px;
+  background:var(--primary);color:#fff;
+  font-size:0.68rem;font-weight:700;
+  padding:3px 10px;border-radius:20px;box-shadow:0 2px 8px rgba(255,59,0,0.4);
+}
+.z-scard-body { padding: 1.1rem; }
+.z-scard-name { font-size: 1rem; font-weight: 800; color: #222; margin: 0 0 0.3rem; }
+.z-scard-meta { font-size: 0.75rem; color: #888; margin: 0 0 0.6rem; }
+.z-scard-tags { display:flex; gap: 0.4rem; flex-wrap: wrap; }
+.z-tag {
+  font-size: 0.68rem; font-weight: 600;
+  padding: 3px 9px; border-radius: 12px;
+  background: #fff0ee; color: var(--primary);
+  border: 1px solid #ffcbc0;
+}
+.z-tag.g { background: #fff8e7; color: #e5900a; border-color: #ffd97a; }
+
+/* ── 4. FEATURES — Center phone mockup ── */
+.z-features {
+  background: linear-gradient(180deg, #fff 0%, #fff5f3 100%);
+  padding: 6rem 0;
+}
+
+.z-features-inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 3.5rem;
+  align-items: center;
+}
+
+.z-feat-col { display: flex; flex-direction: column; gap: 1.6rem; }
+
+.z-feat-item {
+  background: #fff;
+  border-radius: 18px;
+  padding: 1.3rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(0,0,0,0.03);
+}
+.z-feat-item:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 30px rgba(255,59,0,0.12);
+}
+.z-feat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.z-feat-item:hover .z-feat-icon {
+  transform: scale(1.18) rotate(6deg);
+}
+.z-feat-text h5 { font-size: 0.95rem; font-weight: 700; color: #222; margin: 0 0 0.25rem; }
+.z-feat-text p  { font-size: 0.8rem; color: #777; margin: 0; line-height: 1.5; }
+
+/* Phone mockup center */
+.z-phone-wrap {
+  width: 240px;
+  flex-shrink: 0;
+  background: #111;
+  border-radius: 38px;
+  padding: 12px;
+  box-shadow: 0 25px 70px rgba(0,0,0,0.25);
+  position: relative;
+  animation: phoneFloat 6s ease-in-out infinite;
+}
+.z-phone-wrap::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 65px;
+  height: 8px;
+  background: #222;
+  border-radius: 4px;
+  z-index: 2;
+}
+.z-phone-screen {
+  background: #fff;
+  border-radius: 28px;
+  overflow: hidden;
+  height: 430px;
+  display: flex;
+  flex-direction: column;
+}
+.z-phone-header {
+  background: var(--primary);
+  padding: 2rem 1rem 1rem;
+  text-align: center;
+  color: #fff;
+}
+.z-phone-header .ph { font-size: 1.05rem; font-weight: 800; }
+.z-phone-header .ps { font-size: 0.7rem; opacity: 0.85; }
+.z-phone-items { padding: 0.9rem; flex: 1; display: flex; flex-direction: column; gap: 0.65rem; overflow: hidden; }
+.z-phone-item {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 0.55rem;
+  transition: transform 0.3s;
+}
+.z-phone-item:hover { transform: translateX(3px); }
+.z-phone-item img { width: 40px; height: 40px; border-radius: 10px; object-fit: cover; }
+.z-phone-item .pi { font-size: 0.68rem; }
+.z-phone-item .pi strong { display: block; color: #222; font-size: 0.75rem; }
+.z-phone-item .pi span { color: #999; }
+.z-phone-item .pp { margin-left: auto; color: var(--primary); font-weight: 800; font-size: 0.75rem; }
+
+/* ── 5. POPULAR DISHES ── */
+.z-dishes { background: #fff; padding: 6rem 0; }
+.z-dishes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+.z-dish-card {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 22px rgba(0,0,0,0.06);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(0,0,0,0.03);
+}
+.z-dish-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(255,59,0,0.15);
+}
+.z-dish-img { position: relative; height: 160px; overflow: hidden; }
+.z-dish-img img { width:100%;height:100%;object-fit:cover;transition:transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);display:block; }
+.z-dish-card:hover .z-dish-img img { transform: scale(1.1); }
+.z-dish-veg {
+  position:absolute;top:10px;left:10px;
+  width:14px;height:14px;border-radius:3px;border:2px solid;
+}
+.z-dish-veg.veg     { border-color:#2E7D32;background:#2E7D32; }
+.z-dish-veg.non-veg { border-color:#B71C1C;background:#B71C1C; }
+.z-dish-veg.egg     { border-color:#F9A825;background:#F9A825; }
+.z-dish-add {
+  position:absolute;bottom:10px;right:10px;
+  width:36px;height:36px;border-radius:10px;
+  background:var(--primary);border:none;color:#fff;
+  font-size:1.3rem;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(255,59,0,0.5);transition:all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.z-dish-add:hover { transform:scale(1.15) rotate(90deg); background: var(--primary-light); }
+.z-dish-body { padding: 1rem; }
+.z-dish-name { font-size: 0.92rem; font-weight: 700; color: #222; margin: 0 0 0.2rem; }
+.z-dish-shop { font-size: 0.72rem; color: #999; margin: 0 0 0.5rem; }
+.z-dish-price { font-size: 1.1rem; font-weight: 900; color: var(--primary); }
+
+/* ── 6. GOLD / PRIME SECTION ── */
+.z-premium {
+  background: #0d0d0d;
+  color: #fff;
+  padding: 6.5rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  clip-path: ellipse(120% 100% at 50% 100%);
+  margin-top: -3rem;
+}
+.z-premium::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% -20%, rgba(255,179,0,0.2) 0%, transparent 65%);
+}
+.z-premium-inner { position: relative; z-index: 1; }
+.z-premium-logo { font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem; font-style: italic; }
+.z-premium-title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 900;
+  color: #FFB300;
+  letter-spacing: -2px;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+.z-premium-sub { color: rgba(255,255,255,0.65); font-size: 1rem; margin-bottom: 3rem; }
+.z-premium-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2rem;
+}
+.z-benefits {
+  display: flex;
+  gap: 3rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 3rem;
+}
+.z-benefit {
+  text-align: center;
+  transition: transform 0.3s;
+}
+.z-benefit:hover { transform: translateY(-5px); }
+.z-benefit-icon { font-size: 2.2rem; margin-bottom: 0.5rem; }
+.z-benefit-text { font-size: 0.88rem; color: rgba(255,255,255,0.75); font-weight: 600; }
+.z-coins { position: absolute; inset: 0; pointer-events: none; }
+.z-coin {
+  position: absolute;
+  font-size: 2.5rem;
+  opacity: 0.25;
+  animation: floatCoin3D var(--d, 6s) ease-in-out infinite;
+  animation-delay: var(--dl, 0s);
+}
+
+/* ── 7. QR / APP CTA ── */
+.z-cta { background: #fff5f3; padding: 6rem 0; }
+.z-cta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+  background: #fff;
+  border-radius: 26px;
+  padding: 3.5rem;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+  max-width: 920px;
+  margin: 0 auto;
+  border: 1px solid rgba(255,59,0,0.08);
+}
+.z-cta h2 { font-size: 1.9rem; font-weight: 900; color: #222; margin-bottom: 0.75rem; }
+.z-cta h2 span { color: var(--primary); }
+.z-cta p { font-size: 0.95rem; color: #666; line-height: 1.7; margin-bottom: 1.6rem; }
+.z-cta-btns { display: flex; gap: 0.85rem; flex-wrap: wrap; }
+.z-qr-box {
+  background: #fdf6f4;
+  border-radius: 20px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  border: 1px dashed rgba(255,59,0,0.3);
+  transition: transform 0.3s;
+}
+.z-qr-box:hover { transform: scale(1.03); }
+.z-qr-icon { font-size: 4.5rem; }
+.z-qr-text { font-size: 0.82rem; color: #777; text-align: center; font-weight: 600; }
+
+/* ── 8. AI SECTION ── */
+.z-ai {
+  background: linear-gradient(135deg, #180500, #0d0d0d, #00140a);
+  padding: 6rem 0;
+  text-align: center;
+}
+.z-ai-inner { max-width: 640px; margin: 0 auto; }
+.z-ai h2 { font-size: 2.2rem; font-weight: 900; margin-bottom: 0.75rem; }
+.z-ai h2 span { color: var(--primary); }
+.z-ai p { color: #aaa; font-size: 0.95rem; line-height: 1.7; margin-bottom: 2rem; }
+.z-ai-pills { display: flex; flex-wrap: wrap; gap: 0.7rem; justify-content: center; margin-bottom: 2.2rem; }
+.z-ai-pill {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #ccc;
+  font-size: 0.82rem;
+  padding: 0.5rem 1.1rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.z-ai-pill:hover {
+  background: rgba(255,59,0,0.15);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(255,59,0,0.3);
+}
+.z-ai-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: linear-gradient(135deg, var(--primary), #ff6b35);
+  color: #fff;
+  border: none;
+  padding: 1.1rem 2.8rem;
+  border-radius: 50px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 45px rgba(255,59,0,0.45);
+  position: relative;
+  overflow: hidden;
+}
+.z-ai-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  animation: btnShine 2.8s infinite;
+}
+.z-ai-btn:hover {
+  transform: scale(1.06) translateY(-2px);
+  box-shadow: 0 0 55px rgba(255,59,0,0.65);
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .z-features-inner { grid-template-columns: 1fr; }
+  .z-phone-wrap { display: none; }
+  .z-cta-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .z-about { padding: 5rem 0 4rem; }
+}
+
+@media(max-width:600px){
+  .z-hero-title { font-size: 2.2rem; }
+  .z-stats-strip { gap: 2rem; padding: 1.5rem; }
+  .z-benefits { gap: 2rem; }
+  .z-premium { clip-path: none; margin-top: 0; }
+  .z-dishes-grid { grid-template-columns: repeat(2,1fr); }
+  .z-floats { display: none; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════════
+     1. HERO — Fullscreen Animated Video Background
+══════════════════════════════════════════════ -->
+<section class="z-hero" id="hero">
+  <!-- Clean Background Video -->
+  <video class="z-hero-video" id="heroVideo" autoplay muted loop playsinline preload="auto" poster="{{ url_for('static', filename='images/eat-street-night.jpg') }}">
+    <source src="{{ url_for('static', filename='videos/hero_bg.mp4') }}" type="video/mp4">
+    <source src="{{ url_for('static', filename='videos/landing_video.mp4') }}" type="video/mp4">
+  </video>
+
+  <!-- Clean Overlay Gradient -->
+  <div class="z-hero-overlay"></div>
+
+  <!-- Hero Content (Clean Typography, No background formats) -->
+  <div class="z-hero-content">
+    <div class="z-logo-text">@EAT<span>STREET</span></div>
+    <h1 class="z-hero-title">
+      Kakinada's #1<br>Food Destination
+    </h1>
+    <p class="z-hero-sub">
+      Order delivery, pick up takeaway, or dine-in with QR table ordering — all in one place.
+    </p>
+    <div class="z-hero-btns">
+      <a href="{{ url_for('shops.list_shops') }}" class="z-btn-primary">
+        🍴 &nbsp;Order Now
+      </a>
+      <a href="{{ url_for('dine_in.reserve', shop_id=1) }}" class="z-btn-outline">
+        🪑 &nbsp;Book a Table
+      </a>
+    </div>
+  </div>
+
+  <div class="z-scroll" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">
+    <span>Scroll down</span>
+    <i class="ri-arrow-down-s-line"></i>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     2. ABOUT — Floating Food with Mouse Parallax
+══════════════════════════════════════════════ -->
+<section class="z-about" id="about">
+  <!-- Floating food images -->
+  <div class="z-floats">
+    <img src="{{ url_for('static', filename='images/food_39.jpg') }}" class="z-float z-float-1"
+         style="--rot0:-8deg;--rot1:4deg" alt="">
+    <img src="{{ url_for('static', filename='images/food_46.jpg') }}" class="z-float z-float-2"
+         style="--rot0:6deg;--rot1:-4deg" alt="">
+    <img src="{{ url_for('static', filename='images/food_57.jpg') }}" class="z-float z-float-3"
+         style="--rot0:5deg;--rot1:-5deg" alt="">
+    <img src="{{ url_for('static', filename='images/food_51.jpg') }}" class="z-float z-float-4"
+         style="--rot0:-5deg;--rot1:8deg" alt="">
+  </div>
+
+  <div class="container z-about-inner">
+    <h2 class="z-about-headline reveal">
+      Better food for<br>more people
+    </h2>
+    <p class="z-about-para reveal delay-1">
+      For years, we've brought Kakinada's tastiest stalls to one place — from sizzling BBQ to fresh Biryani, from fluffy Waffles to steaming Momos. Delivered right to your door.
+    </p>
+
+    <!-- Stats strip -->
+    <div class="z-stats-strip reveal delay-2">
+      <div class="z-stat-item">
+        <div class="z-stat-num">
+          <span class="z-stat-icon">🏪</span>
+          <span class="counter" data-target="10">0</span>+
+        </div>
+        <div class="z-stat-lbl">stalls</div>
+      </div>
+      <div class="z-stat-item">
+        <div class="z-stat-num">
+          <span class="z-stat-icon">📍</span>
+          1
+        </div>
+        <div class="z-stat-lbl">prime location</div>
+      </div>
+      <div class="z-stat-item">
+        <div class="z-stat-num">
+          <span class="z-stat-icon">🧾</span>
+          <span class="counter" data-target="836">0</span>+
+        </div>
+        <div class="z-stat-lbl">orders served</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     3. SHOPS — Horizontal scroll
+══════════════════════════════════════════════ -->
+<section class="z-shops-section" id="shops">
+  <div class="container reveal">
+    <h2 class="z-section-title">Our <span>Restaurants</span></h2>
+    <p class="z-section-sub">{{ shops|length }} amazing stalls at Eat Street, Kakinada</p>
+  </div>
+  <div class="z-shop-row reveal delay-1">
+    {% for shop in shops %}
+    <a href="{{ url_for('shops.detail', shop_id=shop.id) }}" class="z-scard reveal">
+      <div class="z-scard-img">
+        <img src="{{ url_for('static', filename='images/shop_' + shop.shop_code + '.jpg') }}"
+             alt="{{ shop.name }}"
+             onerror="this.src='{{ url_for('static', filename='images/default_shop.jpg') }}'">
+        <span class="z-scard-rat">⭐ {{ shop.rating }}</span>
+        <span class="z-scard-cat">{{ shop.category }}</span>
+      </div>
+      <div class="z-scard-body">
+        <div class="z-scard-name">{{ shop.name }}</div>
+        <div class="z-scard-meta">🕐 {{ shop.opening_time }}–{{ shop.closing_time }}</div>
+        <div class="z-scard-tags">
+          {% if shop.dine_in  %}<span class="z-tag g">🍽️ Dine-In</span>{% endif %}
+          {% if shop.delivery %}<span class="z-tag">🛵 Delivery</span>{% endif %}
+          {% if shop.takeaway %}<span class="z-tag">🥡 Takeaway</span>{% endif %}
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  <div style="text-align:center;margin-top:2rem" class="reveal delay-2">
+    <a href="{{ url_for('shops.list_shops') }}" class="z-btn-primary">View All Stalls →</a>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     4. FEATURES — Center phone mockup
+══════════════════════════════════════════════ -->
+<section class="z-features" id="features">
+  <div class="container reveal">
+    <h2 class="z-section-title" style="margin-bottom:0.75rem">What's waiting for you?</h2>
+    <p class="z-section-sub" style="margin-bottom:3rem">Our platform is packed with features for the perfect food experience</p>
+
+    <div class="z-features-inner">
+      <!-- Left features -->
+      <div class="z-feat-col">
+        <div class="z-feat-item reveal-left">
+          <div class="z-feat-icon" style="background:#fff0ee"><span>🛵</span></div>
+          <div class="z-feat-text">
+            <h5>Fast Delivery</h5>
+            <p>Hot food from stall to your door. Live tracking included.</p>
+          </div>
+        </div>
+        <div class="z-feat-item reveal-left">
+          <div class="z-feat-icon" style="background:#fff8e7"><span>📱</span></div>
+          <div class="z-feat-text">
+            <h5>QR Table Ordering</h5>
+            <p>Scan at your table, order without a waiter, request bill instantly.</p>
+          </div>
+        </div>
+        <div class="z-feat-item reveal-left">
+          <div class="z-feat-icon" style="background:#f0fff4"><span>🤖</span></div>
+          <div class="z-feat-text">
+            <h5>AI Food Assistant</h5>
+            <p>Ask our AI for recommendations. Runs locally, no data shared.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center phone mockup -->
+      <div class="z-phone-wrap reveal-scale">
+        <div class="z-phone-screen">
+          <div class="z-phone-header">
+            <div class="ph">@EATSTREET</div>
+            <div class="ps">📍 Rama Rao Peta, Kakinada</div>
+          </div>
+          <div class="z-phone-items">
+            {% for item in featured_items[:5] %}
+            <div class="z-phone-item">
+              <img src="{{ url_for('static', filename='images/' + resolve_menu_item_image(item)) }}"
+                   alt="{{ item.name }}"
+                   onerror="this.src='{{ url_for('static', filename='images/default_food.jpg') }}'">
+              <div class="pi">
+                <strong>{{ item.name[:18] }}{% if item.name|length > 18 %}…{% endif %}</strong>
+                <span>{{ item.shop.name }}</span>
+              </div>
+              <div class="pp">₹{{ item.price|int }}</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Right features -->
+      <div class="z-feat-col">
+        <div class="z-feat-item reveal-right">
+          <div class="z-feat-icon" style="background:#f0f5ff"><span>🍽️</span></div>
+          <div class="z-feat-text">
+            <h5>Dine-In Booking</h5>
+            <p>Reserve your table online. Walk in or plan ahead — your choice.</p>
+          </div>
+        </div>
+        <div class="z-feat-item reveal-right">
+          <div class="z-feat-icon" style="background:#fff0ee"><span>🧾</span></div>
+          <div class="z-feat-text">
+            <h5>Digital Kitchen Display</h5>
+            <p>Orders go to kitchen instantly. No paper slips, no confusion.</p>
+          </div>
+        </div>
+        <div class="z-feat-item reveal-right">
+          <div class="z-feat-icon" style="background:#f5f0ff"><span>⭐</span></div>
+          <div class="z-feat-text">
+            <h5>Rated 4.2 / 5</h5>
+            <p>836 happy Kakinada customers can't be wrong. Join them today.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     5. POPULAR DISHES
+══════════════════════════════════════════════ -->
+<section class="z-dishes" id="dishes">
+  <div class="container reveal">
+    <h2 class="z-section-title">🔥 Popular <span>Dishes</span></h2>
+    <p class="z-section-sub">Most loved items across all stalls today</p>
+    <div class="z-dishes-grid reveal delay-1">
+      {% for item in featured_items %}
+      <div class="z-dish-card reveal" onclick="addToCart({{ item.id }}, null)">
+        <div class="z-dish-img">
+          <img src="{{ url_for('static', filename='images/' + resolve_menu_item_image(item)) }}"
+               alt="{{ item.name }}"
+               onerror="this.src='{{ url_for('static', filename='images/default_food.jpg') }}'">
+          <span class="z-dish-veg {{ item.veg_nonveg }}"></span>
+          <button class="z-dish-add" onclick="event.stopPropagation();addToCart({{ item.id }}, this)">+</button>
+        </div>
+        <div class="z-dish-body">
+          <div class="z-dish-name">{{ item.name }}</div>
+          <div class="z-dish-shop">{{ item.shop.name }}</div>
+          <div class="z-dish-price">₹{{ item.price|int }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     6. PREMIUM / GOLD SECTION
+══════════════════════════════════════════════ -->
+<section class="z-premium">
+  <!-- Floating coins -->
+  <div class="z-coins">
+    <span class="z-coin" style="left:5%;top:20%;--d:6s;--dl:0s">🪙</span>
+    <span class="z-coin" style="right:5%;top:15%;--d:7s;--dl:0.5s">🪙</span>
+    <span class="z-coin" style="left:15%;bottom:20%;--d:8s;--dl:1s">⭐</span>
+    <span class="z-coin" style="right:12%;bottom:25%;--d:6.5s;--dl:1.5s">⭐</span>
+  </div>
+
+  <div class="container z-premium-inner reveal">
+    <div class="z-premium-logo">@EATSTREET</div>
+    <div class="z-premium-title">PRIME</div>
+    <p class="z-premium-sub">Kakinada's Top Savings Club for Food Lovers</p>
+    <p class="z-premium-label">★ &nbsp; PRIME BENEFITS &nbsp; ★</p>
+
+    <div class="z-benefits">
+      <div class="z-benefit reveal">
+        <div class="z-benefit-icon">🆓</div>
+        <div class="z-benefit-text">Free Delivery</div>
+      </div>
+      <div class="z-benefit reveal">
+        <div class="z-benefit-icon">🎁</div>
+        <div class="z-benefit-text">Exclusive Offers</div>
+      </div>
+      <div class="z-benefit reveal">
+        <div class="z-benefit-icon">⚡</div>
+        <div class="z-benefit-text">Priority Orders</div>
+      </div>
+      <div class="z-benefit reveal">
+        <div class="z-benefit-icon">🪑</div>
+        <div class="z-benefit-text">Table Priority</div>
+      </div>
+      <div class="z-benefit reveal">
+        <div class="z-benefit-icon">🤖</div>
+        <div class="z-benefit-text">AI Concierge</div>
+      </div>
+    </div>
+
+    <a href="{{ url_for('auth.register') }}" class="z-btn-primary reveal delay-2" style="font-size:1rem;padding:1rem 2.5rem;border-radius:50px">
+      ⭐ &nbsp; Join EatStreet Prime — Free
+    </a>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     7. QR / DINE-IN CTA
+══════════════════════════════════════════════ -->
+<section class="z-cta">
+  <div class="container">
+    <div class="z-cta-grid">
+      <div class="reveal-left">
+        <h2>Experience seamless <span>Dine-In</span> ordering</h2>
+        <p>
+          Scan the QR code at your table at Eat Street, browse the full menu, add to cart, and order — without leaving your seat. Call for water or the bill with a single tap.
+        </p>
+        <div class="z-cta-btns">
+          <a href="{{ url_for('dine_in.reserve', shop_id=1) }}" class="z-btn-primary">
+            🪑 &nbsp; Reserve Table
+          </a>
+          <a href="{{ url_for('shops.list_shops') }}" class="z-btn-outline" style="color:#333;border-color:#ccc">
+            Browse Stalls →
+          </a>
+        </div>
+      </div>
+      <div class="z-qr-box reveal-right">
+        <div class="z-qr-icon">📱</div>
+        <div style="font-size:3rem">⬛⬛⬛<br>⬛⬛⬛<br>⬛⬛⬛</div>
+        <div class="z-qr-text">Scan QR at your table<br>to start ordering</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     8. AI CHATBOT CTA
+══════════════════════════════════════════════ -->
+<section class="z-ai">
+  <div class="container z-ai-inner reveal">
+    <p style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--primary);margin-bottom:0.5rem">🤖 Ollama Powered</p>
+    <h2>Meet <span>EatStreet AI</span></h2>
+    <p>Ask anything about our menu — "cheapest veg dish", "best biryani", "open now" — our AI knows all 73 dishes and helps you decide in seconds.</p>
+    <div class="z-ai-pills reveal delay-1">
+      <span class="z-ai-pill" onclick="aiQ(this)">"Cheapest veg food?"</span>
+      <span class="z-ai-pill" onclick="aiQ(this)">"Best BBQ stall?"</span>
+      <span class="z-ai-pill" onclick="aiQ(this)">"Show momos options"</span>
+      <span class="z-ai-pill" onclick="aiQ(this)">"Food under ₹100"</span>
+    </div>
+    <button class="z-ai-btn reveal-scale delay-2" onclick="toggleChat()">
+      <i class="ri-sparkling-2-line"></i> Chat with EatStreet AI
+    </button>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ── Navbar scroll appearance ── */
+window.addEventListener('scroll', () => {
+  const navbar = document.getElementById('navbar');
+  if (navbar) {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  }
+});
+
+/* ── Hero Video Auto-Play & Viewport Management ── */
+const heroVideo = document.getElementById('heroVideo');
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (heroVideo) {
+    const playPromise = heroVideo.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        heroVideo.muted = true;
+        heroVideo.play();
+      });
+    }
+  }
+});
+
+// Pause hero video when out of viewport to save CPU/battery
+const heroObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (!heroVideo) return;
+    if (!entry.isIntersecting) {
+      if (!heroVideo.paused) heroVideo.pause();
+    } else {
+      if (heroVideo.paused) heroVideo.play().catch(() => {});
+    }
+  });
+}, { threshold: 0.1 });
+
+const heroSection = document.getElementById('hero');
+if (heroSection) heroObserver.observe(heroSection);
+
+/* ── Scroll Reveal Observer ── */
+const revealObserver = new IntersectionObserver((entries, observer) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('active');
+      observer.unobserve(entry.target);
+    }
+  });
+}, {
+  threshold: 0.12,
+  rootMargin: '0px 0px -40px 0px'
+});
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
+  revealObserver.observe(el);
+});
+
+/* ── Counter animation on viewport enter ── */
+let counterDone = false;
+const statsObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting || counterDone) return;
+    counterDone = true;
+    e.target.querySelectorAll('.counter').forEach(el => {
+      const target = +el.dataset.target || 0;
+      const duration = 1600;
+      const startTime = performance.now();
+      
+      function updateCounter(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const currentVal = Math.floor(ease * target);
+        el.textContent = currentVal;
+        
+        if (progress < 1) {
+          requestAnimationFrame(updateCounter);
+        } else {
+          el.textContent = target;
+        }
+      }
+      requestAnimationFrame(updateCounter);
+    });
+    statsObserver.disconnect();
+  });
+}, { threshold: 0.3 });
+
+const statsStrip = document.querySelector('.z-stats-strip');
+if (statsStrip) statsObserver.observe(statsStrip);
+
+/* ── Subtle Mouse Parallax on Floating Food (Desktop only) ── */
+if (window.matchMedia('(min-width: 768px)').matches) {
+  const aboutSection = document.querySelector('.z-about');
+  const floats = document.querySelectorAll('.z-float');
+
+  if (aboutSection && floats.length) {
+    aboutSection.addEventListener('mousemove', (e) => {
+      const rect = aboutSection.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      
+      floats.forEach((f, idx) => {
+        const factor = (idx + 1) * 12;
+        f.style.transform = `translate(${x * factor}px, ${y * factor}px)`;
+      });
+    });
+
+    aboutSection.addEventListener('mouseleave', () => {
+      floats.forEach(f => f.style.transform = '');
+    });
+  }
+}
+
+/* ── AI suggestion helper ── */
+function aiQ(el) {
+  const q = el.textContent.replace(/"/g,'').trim();
+  const inp = document.getElementById('chatInput');
+  if (inp) inp.value = q;
+  if (typeof toggleChat === 'function') toggleChat();
+  setTimeout(() => { if (typeof sendChat === 'function') sendChat(); }, 400);
+}
+</script>
+{% endblock %}

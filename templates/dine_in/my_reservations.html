@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}My Table Reservations — Eat Street{% endblock %}
+{% block content %}
+<div style="padding-top:90px;min-height:100vh">
+  <div class="container" style="max-width:850px;padding-top:2rem;padding-bottom:4rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem">
+      <div>
+        <h1 style="font-size:1.6rem;font-weight:800">🪑 My Table Reservations</h1>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin-top:0.3rem">Track and manage your Eat Street dine-in bookings</p>
+      </div>
+      <a href="{{ url_for('shops.list_shops') }}" class="btn btn-primary btn-sm">
+        <i class="ri-add-line"></i> Book Another Table
+      </a>
+    </div>
+
+    {% if reservations %}
+    <div style="display:flex;flex-direction:column;gap:1.25rem">
+      {% for res in reservations %}
+      <div class="card" style="padding:1.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">
+          <div>
+            <div style="font-size:1.1rem;font-weight:800;color:#fff">{{ res.shop.name }}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted)">Reservation #{{ res.id }} · Booked on {{ res.created_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+          </div>
+          <div>
+            {% if res.status == 'CONFIRMED' %}
+            <span class="badge" style="background:rgba(76,175,80,0.15);color:#4caf50;border:1px solid rgba(76,175,80,0.3);font-size:0.8rem;padding:4px 10px;border-radius:20px">
+              ✅ Confirmed
+            </span>
+            {% elif res.status == 'PENDING' %}
+            <span class="badge" style="background:rgba(255,179,0,0.15);color:#ffb300;border:1px solid rgba(255,179,0,0.3);font-size:0.8rem;padding:4px 10px;border-radius:20px">
+              ⏳ Pending
+            </span>
+            {% else %}
+            <span class="badge" style="background:rgba(244,67,54,0.15);color:#f44336;border:1px solid rgba(244,67,54,0.3);font-size:0.8rem;padding:4px 10px;border-radius:20px">
+              ❌ {{ res.status }}
+            </span>
+            {% endif %}
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:1rem;background:var(--bg-surface);padding:1rem;border-radius:10px;border:1px solid var(--border);font-size:0.85rem">
+          <div>
+            <div style="color:var(--text-muted);font-size:0.75rem">TABLE NUMBER</div>
+            <div style="font-weight:700;font-size:1rem;color:var(--gold);margin-top:2px">Table {{ res.table.table_number if res.table else 'Assigned on arrival' }}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted)">{{ res.table.location_desc if res.table and res.table.location_desc else 'Main hall' }}</div>
+          </div>
+          <div>
+            <div style="color:var(--text-muted);font-size:0.75rem">DATE & TIME</div>
+            <div style="font-weight:700;margin-top:2px">📅 {{ res.date }}</div>
+            <div style="color:var(--primary);font-weight:600">⏰ {{ res.time }}</div>
+          </div>
+          <div>
+            <div style="color:var(--text-muted);font-size:0.75rem">PARTY SIZE</div>
+            <div style="font-weight:700;margin-top:2px">👥 {{ res.people_count }} {{ 'Person' if res.people_count==1 else 'People' }}</div>
+            <div style="font-size:0.72rem;color:var(--text-muted)">Pref: {{ res.seating_preference or 'Any' }}</div>
+          </div>
+          <div>
+            <div style="color:var(--text-muted);font-size:0.75rem">GUEST INFO</div>
+            <div style="font-weight:700;margin-top:2px">{{ res.guest_name }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted)">{{ res.guest_phone or 'No phone' }}</div>
+          </div>
+        </div>
+
+        {% if res.note %}
+        <div style="margin-top:0.75rem;font-size:0.8rem;color:var(--text-muted);background:rgba(255,255,255,0.03);padding:0.5rem 0.75rem;border-radius:6px">
+          📝 <strong>Note:</strong> {{ res.note }}
+        </div>
+        {% endif %}
+
+        <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-top:1rem">
+          <a href="{{ url_for('shops.detail', shop_id=res.shop_id) }}" class="btn btn-glass btn-sm">
+            <i class="ri-restaurant-line"></i> View Menu
+          </a>
+          <a href="{{ url_for('dine_in.reserve', shop_id=res.shop_id) }}" class="btn btn-outline btn-sm">
+            <i class="ri-repeat-line"></i> Book Again
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:5rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:16px">
+      <div style="font-size:4.5rem;margin-bottom:1rem">🪑</div>
+      <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:0.5rem">No reservations yet</h2>
+      <p style="color:var(--text-muted);margin-bottom:1.5rem">Book a table in advance at any of our 10 street food stalls!</p>
+      <a href="{{ url_for('shops.list_shops') }}" class="btn btn-primary btn-lg">Browse Shops & Book</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

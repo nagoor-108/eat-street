@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Menu — {{ shop.name }}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block content %}
+<div class="vendor-layout">
+  <aside class="vendor-sidebar">
+    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem">
+      <div class="navbar-logo"><div class="logo-icon">🍴</div><div class="logo-text"><span class="logo-main" style="font-size:0.85rem">DASHBOARD</span><span class="logo-sub">Eat Street</span></div></div>
+    </div>
+    <p class="sidebar-section-label">{{ shop.name }}</p>
+    <ul class="sidebar-nav">
+      <li><a href="{{ url_for('vendor.dashboard') }}"><i class="ri-dashboard-line"></i> Overview</a></li>
+      <li><a href="{{ url_for('vendor.orders', shop_id=shop.id) }}"><i class="ri-file-list-3-line"></i> Orders</a></li>
+      <li><a href="{{ url_for('vendor.tables', shop_id=shop.id) }}"><i class="ri-table-line"></i> Tables</a></li>
+      <li><a href="{{ url_for('vendor.menu_manage', shop_id=shop.id) }}" class="active"><i class="ri-restaurant-line"></i> Menu</a></li>
+      <li><a href="{{ url_for('kitchen.display', shop_id=shop.id) }}"><i class="ri-fire-line"></i> Kitchen</a></li>
+    </ul>
+  </aside>
+  <main class="vendor-main">
+    <h1 style="font-size:1.25rem;font-weight:800;margin-bottom:0.5rem">🍽️ Menu Management</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:2rem">{{ shop.name }} · Toggle availability of items</p>
+    {% for cat in categories %}
+    <div style="margin-bottom:2rem">
+      <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">{{ cat.name }}</h2>
+      <div style="display:flex;flex-direction:column;gap:0.5rem">
+        {% for item in cat.items %}
+        <div style="display:flex;align-items:center;padding:0.85rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;gap:0.75rem" id="item-row-{{ item.id }}">
+          <span class="veg-dot {{ item.veg_nonveg }}" style="flex-shrink:0"></span>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:0.88rem">{{ item.name }}</div>
+            <div style="font-size:0.75rem;color:var(--text-muted)">{{ item.quantity_desc }} · ₹{{ item.price|int }}</div>
+          </div>
+          <!-- Toggle Switch -->
+          <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer" title="Toggle availability">
+            <input type="checkbox" {{ 'checked' if item.is_available else '' }} style="display:none" onchange="toggleItem({{ item.id }}, this)">
+            <span id="toggle-{{ item.id }}" style="position:absolute;inset:0;border-radius:12px;background:{{ 'var(--success)' if item.is_available else 'var(--bg-elevated)' }};border:1px solid var(--border);transition:all 0.3s">
+              <span style="position:absolute;top:3px;left:{{ '22px' if item.is_available else '3px' }};width:16px;height:16px;border-radius:50%;background:white;transition:all 0.3s" id="dot-{{ item.id }}"></span>
+            </span>
+          </label>
+          <span id="avail-{{ item.id }}" style="font-size:0.72rem;font-weight:600;color:{{ 'var(--success)' if item.is_available else 'var(--danger)' }};min-width:60px;text-align:right">{{ 'Available' if item.is_available else 'Unavailable' }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function toggleItem(itemId, checkbox) {
+  fetch('/vendor/menu/toggle/' + itemId, {method:'POST'})
+    .then(r => r.json()).then(d => {
+      const toggle = document.getElementById('toggle-' + itemId);
+      const dot    = document.getElementById('dot-' + itemId);
+      const avail  = document.getElementById('avail-' + itemId);
+      if(d.available) {
+        toggle.style.background = 'var(--success)';
+        dot.style.left = '22px';
+        avail.style.color = 'var(--success)';
+        avail.textContent = 'Available';
+      } else {
+        toggle.style.background = 'var(--bg-elevated)';
+        dot.style.left = '3px';
+        avail.style.color = 'var(--danger)';
+        avail.textContent = 'Unavailable';
+      }
+      showToast(d.available ? 'Item marked Available' : 'Item marked Unavailable', d.available ? 'success' : 'info');
+    });
+}
+</script>
+{% endblock %}

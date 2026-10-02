@@ -1,0 +1,354 @@
+{% extends "base.html" %}
+{% block title %}{{ shop.name }} — Kakinada Eat Street{% endblock %}
+{% block content %}
+<div style="padding-top:70px">
+
+  <!-- Shop Hero Banner -->
+  <div style="position:relative;height:300px;overflow:hidden;background:var(--bg-surface)">
+    <img src="{{ url_for('static', filename='images/shop_' + shop.shop_code + '.jpg') }}"
+         onerror="this.src='{{ url_for('static', filename='images/default_shop.jpg') }}'"
+         alt="{{ shop.name }}"
+         style="width:100%;height:100%;object-fit:cover;opacity:0.65">
+    <div style="position:absolute;inset:0;background:linear-gradient(to top,var(--bg) 0%,transparent 60%)"></div>
+    <div style="position:absolute;bottom:1.5rem;left:0;right:0">
+      <div class="container">
+        <div class="flex-between" style="flex-wrap:wrap;gap:1rem">
+          <div>
+            <div style="font-size:0.8rem;color:var(--primary);font-weight:600;margin-bottom:0.3rem">{{ shop.category }}</div>
+            <h1 style="font-size:2rem;font-weight:900">{{ shop.name }}</h1>
+            {% if shop.telugu_name %}<div style="font-size:0.9rem;color:var(--text-muted)">{{ shop.telugu_name }}</div>{% endif %}
+            <div style="display:flex;gap:1rem;margin-top:0.5rem;flex-wrap:wrap;font-size:0.82rem;color:var(--text-muted)">
+              <span>⭐ {{ shop.rating }} ({{ shop.total_reviews }} reviews)</span>
+              <span>🕐 {{ shop.opening_time }}–{{ shop.closing_time }}</span>
+              <span>📍 {{ shop.location }}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            {% if shop.dine_in %}
+            <a href="{{ url_for('dine_in.reserve', shop_id=shop.id) }}" class="btn btn-gold btn-sm">
+              <i class="ri-calendar-check-line"></i> Reserve Table
+            </a>
+            {% endif %}
+            {% if shop.delivery or shop.takeaway %}
+            <button class="btn btn-primary btn-sm" onclick="openCartSidebar()">
+              <i class="ri-shopping-cart-2-line"></i> View Cart
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="padding-top:2rem;padding-bottom:4rem">
+    <!-- Order Mode Tabs -->
+    <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:1rem">
+      {% if shop.delivery %}
+      <button class="btn btn-glass order-tab-btn active" data-mode="DELIVERY" onclick="setOrderType(this)">🛵 Delivery</button>
+      {% endif %}
+      {% if shop.takeaway %}
+      <button class="btn btn-glass order-tab-btn {{ 'active' if not shop.delivery else '' }}" data-mode="TAKEAWAY" onclick="setOrderType(this)">🥡 Takeaway</button>
+      {% endif %}
+      {% if shop.dine_in %}
+      <button class="btn btn-glass order-tab-btn" data-mode="DINE_IN" onclick="setOrderType(this)">🍽️ Dine-In</button>
+      {% endif %}
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:2rem;align-items:start">
+
+      <!-- Left: Menu -->
+      <div>
+        <!-- Category Quick Nav -->
+        <div class="category-pills" style="margin-bottom:2rem">
+          {% for cat in categories %}
+          <a href="#cat-{{ cat.id }}" class="category-pill">{{ cat.name }}</a>
+          {% endfor %}
+        </div>
+
+        <!-- Menu Categories -->
+        {% for cat in categories %}
+        <div id="cat-{{ cat.id }}" style="margin-bottom:2.5rem;scroll-margin-top:90px">
+          <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border)">
+            {{ cat.name }}
+          </h2>
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            {% for item in cat.items %}
+            {% if item.is_available %}
+            <div class="card" style="border-radius:12px;overflow:hidden">
+              <div style="display:flex;align-items:center;padding:1rem;gap:1rem">
+                <div style="width:90px;height:90px;border-radius:12px;overflow:hidden;flex-shrink:0;background:var(--bg-surface)">
+                  <img src="{{ url_for('static', filename='images/' + resolve_menu_item_image(item)) }}"
+                       onerror="this.src='{{ url_for('static', filename='images/default_food.jpg') }}'"
+                       style="width:100%;height:100%;object-fit:cover" alt="{{ item.name }}">
+                </div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.2rem">
+                    <span class="veg-dot {{ item.veg_nonveg }}"></span>
+                    <span style="font-size:0.88rem;font-weight:600">{{ item.name }}</span>
+                    {% if item.is_featured %}<span style="font-size:0.65rem;background:rgba(255,179,0,0.2);color:var(--gold);padding:2px 6px;border-radius:10px;font-weight:700">⭐ Popular</span>{% endif %}
+                  </div>
+                  {% if item.quantity_desc %}<div style="font-size:0.75rem;color:var(--text-sub)">{{ item.quantity_desc }}</div>{% endif %}
+                  {% if item.description %}<div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.2rem">{{ item.description }}</div>{% endif %}
+                  <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.3rem;font-size:0.72rem;color:var(--text-sub)">
+                    <span>⏱ ~{{ item.preparation_time }} min</span>
+                    <span>🌶 {{ item.spice_level }}</span>
+                  </div>
+                </div>
+                <div style="flex-shrink:0;text-align:right">
+                  <div style="font-size:1.1rem;font-weight:800;color:var(--primary);margin-bottom:0.5rem">₹{{ item.price|int }}</div>
+                  <div class="qty-control" id="qty-{{ item.id }}" style="display:none">
+                    <button type="button" onclick="changeQty({{ item.id }}, -1, {{ shop.id }})">−</button>
+                    <span class="qty-num" id="qnum-{{ item.id }}">1</span>
+                    <button type="button" onclick="changeQty({{ item.id }}, 1, {{ shop.id }})">+</button>
+                  </div>
+                  <button type="button" class="add-btn" id="addbtn-{{ item.id }}" onclick="addToCart({{ item.id }}, this, {{ shop.id }})" title="Add">
+                    <i class="ri-add-line"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Right: Cart / Info Sticky Panel -->
+      <div style="position:sticky;top:90px;display:flex;flex-direction:column;gap:1rem">
+
+        <!-- Shop Info -->
+        <div class="card" style="padding:1.25rem">
+          <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:1rem">Shop Info</h3>
+          <div style="display:flex;flex-direction:column;gap:0.6rem;font-size:0.82rem;color:var(--text-muted)">
+            <div><i class="ri-time-line"></i> {{ shop.opening_time }} – {{ shop.closing_time }}</div>
+            {% if shop.contact %}<div><i class="ri-phone-line"></i> {{ shop.contact }}</div>{% endif %}
+            <div><i class="ri-map-pin-line"></i> {{ shop.location }}</div>
+            <hr class="divider">
+            <div style="display:flex;flex-wrap:wrap;gap:0.4rem">
+              {% if shop.dine_in %}<span class="tag tag-gold">🍽️ Dine-In</span>{% endif %}
+              {% if shop.takeaway %}<span class="tag">🥡 Takeaway</span>{% endif %}
+              {% if shop.delivery %}<span class="tag tag-primary">🛵 Delivery</span>{% endif %}
+              {% if shop.qr_ordering %}<span class="tag">📱 QR Order</span>{% endif %}
+              {% if shop.table_booking %}<span class="tag">📅 Reservations</span>{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Mini Cart -->
+        <div class="card" style="padding:1.25rem" id="miniCart">
+          <div class="flex-between" style="margin-bottom:0.75rem">
+            <h3 style="font-size:0.95rem;font-weight:700;display:flex;align-items:center;gap:0.4rem;margin:0">
+              <i class="ri-shopping-bag-3-fill" style="color:var(--primary)"></i> Your Order
+            </h3>
+            <span id="miniCartBadge" style="background:var(--bg-card);color:var(--text-muted);font-size:0.75rem;padding:2px 8px;border-radius:12px;border:1px solid var(--border)">0 items</span>
+          </div>
+          
+          <div id="miniCartItems" style="font-size:0.82rem;color:var(--text-muted);min-height:70px;max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:0.6rem">
+            <div style="text-align:center;padding:1.5rem 0;color:var(--text-muted)">
+              <i class="ri-shopping-cart-line" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:0.4rem"></i>
+              Cart is empty
+            </div>
+          </div>
+          
+          <div class="divider" style="margin:0.8rem 0"></div>
+          
+          <div class="flex-between" style="font-size:0.92rem;font-weight:700;margin-bottom:1rem">
+            <span>Total</span>
+            <span style="color:var(--primary);font-size:1.1rem" id="miniCartTotal">₹0</span>
+          </div>
+          
+          <div style="display:flex;flex-direction:column;gap:0.5rem">
+            <a href="{{ url_for('orders.checkout') }}" class="btn btn-primary w-100" id="miniCartCheckoutBtn" style="opacity:0.6;pointer-events:none">
+              Proceed to Checkout <i class="ri-arrow-right-line"></i>
+            </a>
+            <a href="{{ url_for('orders.cart') }}" class="btn btn-glass w-100" style="font-size:0.82rem;padding:0.4rem;text-align:center">
+              <i class="ri-eye-line"></i> View Full Cart
+            </a>
+          </div>
+        </div>
+
+        {% if shop.dine_in %}
+        <a href="{{ url_for('dine_in.reserve', shop_id=shop.id) }}" class="btn btn-gold w-100">
+          <i class="ri-calendar-check-line"></i> Book a Table
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const shopId = {{ shop.id }};
+let orderType = '{{ 'DELIVERY' if shop.delivery else ('TAKEAWAY' if shop.takeaway else 'DINE_IN') }}';
+
+function setOrderType(btn) {
+  document.querySelectorAll('.order-tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  orderType = btn.dataset.mode;
+}
+
+// Fetch and render mini cart data + sync menu cards
+function fetchCartData() {
+  fetch('/orders/cart/data')
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.success) {
+        renderMiniCart(data);
+      }
+    })
+    .catch(err => console.error('Error fetching cart data:', err));
+}
+
+function renderMiniCart(data) {
+  const itemsContainer = document.getElementById('miniCartItems');
+  const totalEl = document.getElementById('miniCartTotal');
+  const badgeEl = document.getElementById('miniCartBadge');
+  const checkoutBtn = document.getElementById('miniCartCheckoutBtn');
+
+  if (typeof updateCartBadge === 'function') {
+    updateCartBadge(data.cart_count);
+  }
+
+  if (badgeEl) {
+    badgeEl.textContent = `${data.cart_count} item${data.cart_count === 1 ? '' : 's'}`;
+  }
+  if (totalEl) {
+    totalEl.textContent = `₹${Math.round(data.total)}`;
+  }
+
+  if (checkoutBtn) {
+    if (data.items && data.items.length > 0) {
+      checkoutBtn.style.opacity = '1';
+      checkoutBtn.style.pointerEvents = 'auto';
+    } else {
+      checkoutBtn.style.opacity = '0.6';
+      checkoutBtn.style.pointerEvents = 'none';
+    }
+  }
+
+  // Render items list in sidebar
+  if (!data.items || data.items.length === 0) {
+    if (itemsContainer) {
+      itemsContainer.innerHTML = `
+        <div style="text-align:center;padding:1.5rem 0;color:var(--text-muted)">
+          <i class="ri-shopping-cart-line" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:0.4rem"></i>
+          Cart is empty
+        </div>
+      `;
+    }
+  } else if (itemsContainer) {
+    itemsContainer.innerHTML = data.items.map(item => `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;color:var(--text);font-size:0.84rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${item.name}">${item.name}</div>
+          <div style="font-size:0.75rem;color:var(--text-sub)">
+            ₹${Math.round(item.price)} × ${item.quantity} = <strong style="color:var(--primary)">₹${Math.round(item.subtotal)}</strong>
+            ${item.shop_id !== shopId ? `<span style="font-size:0.65rem;color:var(--gold);margin-left:4px">(${item.shop_name})</span>` : ''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:3px;flex-shrink:0">
+          <button type="button" class="btn btn-glass btn-xs" style="padding:1px 6px;border-radius:4px;line-height:1.2" onclick="updateCartItemQty(${item.id}, ${item.quantity - 1})">−</button>
+          <span style="font-weight:700;font-size:0.8rem;min-width:16px;text-align:center">${item.quantity}</span>
+          <button type="button" class="btn btn-glass btn-xs" style="padding:1px 6px;border-radius:4px;line-height:1.2" onclick="updateCartItemQty(${item.id}, ${item.quantity + 1})">+</button>
+          <button type="button" class="btn btn-glass btn-xs" style="padding:1px 5px;border-radius:4px;color:var(--danger);line-height:1.2" onclick="removeCartItem(${item.id})" title="Remove"><i class="ri-delete-bin-line"></i></button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Sync menu cards on current shop page
+  const cartQtyByItem = {};
+  if (data.items) {
+    data.items.forEach(i => {
+      cartQtyByItem[i.menu_item_id] = i.quantity;
+    });
+  }
+
+  document.querySelectorAll('[id^="qty-"]').forEach(qtyBox => {
+    const itemId = parseInt(qtyBox.id.replace('qty-', ''));
+    const addBtn = document.getElementById('addbtn-' + itemId);
+    const numEl = document.getElementById('qnum-' + itemId);
+    const qty = cartQtyByItem[itemId] || 0;
+
+    if (qty > 0) {
+      qtyBox.style.display = 'flex';
+      if (numEl) numEl.textContent = qty;
+      if (addBtn) addBtn.style.display = 'none';
+    } else {
+      qtyBox.style.display = 'none';
+      if (numEl) numEl.textContent = '1';
+      if (addBtn) addBtn.style.display = 'inline-flex';
+    }
+  });
+}
+
+function updateCartItemQty(cartId, qty) {
+  fetch('/orders/cart/update', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({cart_id: cartId, quantity: qty})
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      renderMiniCart(data);
+    } else {
+      showToast(data.message || 'Error updating cart', 'warning');
+    }
+  });
+}
+
+function removeCartItem(cartId) {
+  fetch('/orders/cart/remove/' + cartId, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'}
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      renderMiniCart(data);
+      showToast('Item removed', 'info');
+    }
+  });
+}
+
+function addToCart(itemId, btn, sid) {
+  const numEl = document.getElementById('qnum-' + itemId);
+  const qty = numEl ? parseInt(numEl.textContent) || 1 : 1;
+
+  fetch('/orders/cart/add', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({item_id: itemId, quantity: qty, order_type: orderType})
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      renderMiniCart(data);
+      showToast(data.message || 'Added to cart!', 'success');
+    } else {
+      showToast(data.message || 'Could not add item', 'danger');
+    }
+  });
+}
+
+function changeQty(itemId, delta, sid) {
+  const numEl = document.getElementById('qnum-' + itemId);
+  let currentQty = numEl ? parseInt(numEl.textContent) || 0 : 0;
+  let newQty = currentQty + delta;
+  if (newQty < 0) newQty = 0;
+
+  fetch('/orders/cart/update', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({item_id: itemId, quantity: newQty, order_type: orderType})
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      renderMiniCart(data);
+    } else {
+      showToast(data.message || 'Error updating quantity', 'warning');
+    }
+  });
+}
+
+document.addEventListener('DOMContentLoaded', fetchCartData);
+</script>
+{% endblock %}

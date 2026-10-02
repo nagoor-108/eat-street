@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}Secure Login — Eat Street{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-wrapper {
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1.5rem;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg-card, #1c1c1f);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2.4rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 30px rgba(255,59,0,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-security-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 1.2rem;
+}
+
+.auth-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 0.3rem;
+}
+
+.auth-sub {
+  color: var(--text-muted, #888);
+  font-size: 0.88rem;
+  margin-bottom: 1.8rem;
+}
+
+.input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-wrap i.field-icon {
+  position: absolute;
+  left: 14px;
+  color: #888;
+  font-size: 1.15rem;
+  pointer-events: none;
+}
+
+.input-icon-wrap .form-control {
+  padding-left: 42px;
+  padding-right: 44px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 0.95rem;
+  width: 100%;
+  transition: all 0.25s ease;
+}
+
+.input-icon-wrap .form-control:focus {
+  border-color: var(--primary, #ff3b00);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(255, 59, 0, 0.2);
+  outline: none;
+}
+
+.pwd-toggle-btn {
+  position: absolute;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #888;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.pwd-toggle-btn:hover {
+  color: #fff;
+}
+
+/* Security Verification Challenge Box */
+.security-challenge-box {
+  background: rgba(255, 59, 0, 0.06);
+  border: 1px dashed rgba(255, 59, 0, 0.35);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1.4rem;
+}
+
+.challenge-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.challenge-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #ff8555;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.challenge-math-badge {
+  font-family: monospace;
+  font-size: 1.05rem;
+  font-weight: 800;
+  background: rgba(0,0,0,0.4);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+
+.refresh-captcha-btn {
+  background: transparent;
+  border: none;
+  color: #ff8555;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 4px;
+  transition: transform 0.3s ease;
+}
+
+.refresh-captcha-btn:hover {
+  transform: rotate(180deg);
+  color: #fff;
+}
+
+.security-trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 1.8rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #777;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div style="text-align:center">
+      <div class="auth-security-badge">
+        <i class="ri-shield-check-line"></i>
+        <span>256-BIT SSL ENCRYPTED & PROTECTED</span>
+      </div>
+      <h1 class="auth-title">Secure Login</h1>
+      <p class="auth-sub">Access your Kakinada Eat Street Account</p>
+    </div>
+
+    <form method="POST" id="loginForm">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <!-- Honeypot Anti-Bot Field (Hidden from humans) -->
+      <div style="display:none;position:absolute;left:-9999px">
+        <input type="text" name="company_code_hp" tabindex="-1" autocomplete="off">
+      </div>
+
+      <!-- Email Field -->
+      <div class="form-group" style="margin-bottom:1.2rem">
+        <label class="form-label" style="font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;display:block">Email Address</label>
+        <div class="input-icon-wrap">
+          <i class="ri-mail-line field-icon"></i>
+          <input type="email" name="email" id="emailInput" class="form-control" placeholder="name@example.com" required autocomplete="email">
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group" style="margin-bottom:1.3rem">
+        <label class="form-label" style="font-size:0.85rem;font-weight:600;margin-bottom:0.4rem;display:block">Password</label>
+        <div class="input-icon-wrap">
+          <i class="ri-lock-password-line field-icon"></i>
+          <input type="password" name="password" id="passwordInput" class="form-control" placeholder="••••••••" required autocomplete="current-password">
+          <button type="button" class="pwd-toggle-btn" onclick="togglePasswordVisibility()" title="Show/Hide Password" aria-label="Toggle password visibility">
+            <i class="ri-eye-line" id="pwdEyeIcon"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Interactive Security Verification Challenge (Bot & Brute-Force Guard) -->
+      <div class="security-challenge-box">
+        <div class="challenge-header">
+          <span class="challenge-label">
+            <i class="ri-shield-user-line"></i>
+            <span>Security Verification:</span>
+          </span>
+          <div style="display:flex;align-items:center;gap:0.4rem">
+            <span class="challenge-math-badge" id="captchaQuestion">{{ captcha_question }}</span>
+            <button type="button" class="refresh-captcha-btn" onclick="refreshSecurityChallenge()" title="Get new math question">
+              <i class="ri-refresh-line"></i>
+            </button>
+          </div>
+        </div>
+        <input type="number" name="security_captcha" id="captchaInput" class="form-control" placeholder="Enter answer (e.g. 12)" required style="height:40px;border-radius:10px;font-size:0.9rem;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);color:#fff;padding:0 12px;width:100%">
+      </div>
+
+      <!-- Remember Me & Forgot Password -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem">
+        <label style="display:flex;align-items:center;gap:0.45rem;font-size:0.85rem;color:var(--text-muted, #aaa);cursor:pointer;margin:0">
+          <input type="checkbox" name="remember" style="accent-color:var(--primary, #ff3b00)"> Remember this device
+        </label>
+        <a href="{{ url_for('auth.forgot_password') }}" style="color:var(--primary, #ff3b00);font-size:0.85rem;text-decoration:none;font-weight:600;transition:opacity 0.2s" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+          Forgot Password?
+        </a>
+      </div>
+
+      <!-- Sign In Button -->
+      <button type="submit" id="submitBtn" class="btn btn-primary w-100 btn-lg" style="border-radius:12px;font-weight:700;letter-spacing:0.3px;height:48px;display:flex;align-items:center;justify-content:center;gap:0.5rem">
+        <i class="ri-lock-unlock-line"></i> Secure Sign In
+      </button>
+    </form>
+
+    <div class="divider" style="margin:1.6rem 0;border-top:1px solid rgba(255,255,255,0.08)"></div>
+
+    <p style="text-align:center;font-size:0.88rem;color:var(--text-muted, #888);margin:0">
+      Don't have an account? <a href="{{ url_for('auth.register', next=request.args.get('next')) }}" style="color:var(--primary, #ff3b00);font-weight:700;text-decoration:none">Create Account</a>
+    </p>
+
+    <!-- Security Trust Strip -->
+    <div class="security-trust-strip">
+      <span><i class="ri-shield-check-fill" style="color:#4ade80"></i> Brute-Force Protected</span>
+      <span><i class="ri-key-fill" style="color:#ffb300"></i> Bcrypt Hashed</span>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePasswordVisibility() {
+  const pwdInput = document.getElementById('passwordInput');
+  const eyeIcon = document.getElementById('pwdEyeIcon');
+  if (!pwdInput) return;
+  
+  if (pwdInput.type === 'password') {
+    pwdInput.type = 'text';
+    if (eyeIcon) eyeIcon.className = 'ri-eye-off-line';
+  } else {
+    pwdInput.type = 'password';
+    if (eyeIcon) eyeIcon.className = 'ri-eye-line';
+  }
+}
+
+function refreshSecurityChallenge() {
+  const captchaElem = document.getElementById('captchaQuestion');
+  const captchaInput = document.getElementById('captchaInput');
+  
+  fetch('/auth/refresh-captcha')
+    .then(r => r.json())
+    .then(data => {
+      if (data && data.success && data.question) {
+        if (captchaElem) captchaElem.textContent = data.question;
+        if (captchaInput) {
+          captchaInput.value = '';
+          captchaInput.focus();
+        }
+      }
+    })
+    .catch(err => console.error('Failed to refresh security challenge:', err));
+}
+</script>
+{% endblock %}

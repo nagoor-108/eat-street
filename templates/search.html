@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Search: {{ query }} — Eat Street{% endblock %}
+{% block content %}
+<div style="padding-top:90px;min-height:100vh">
+  <div class="container" style="padding-top:2rem;padding-bottom:4rem">
+    <div class="search-bar" style="max-width:600px;margin-bottom:2rem">
+      <i class="ri-search-line" style="color:var(--text-muted)"></i>
+      <input type="text" id="searchInput" value="{{ query }}" placeholder="Search food, shops…" onkeydown="if(event.key==='Enter')doSearch()">
+      <button class="search-btn" onclick="doSearch()"><i class="ri-search-line"></i> Search</button>
+    </div>
+    {% if shops %}
+    <h2 class="section-title" style="margin-bottom:1rem;font-size:1.1rem">Shops</h2>
+    <div class="grid-3" style="margin-bottom:2rem">
+      {% for shop in shops %}
+      <a href="{{ url_for('shops.detail', shop_id=shop.id) }}" class="card shop-card">
+        <div class="shop-card-body">
+          <h3 class="shop-card-name">{{ shop.name }}</h3>
+          <div class="shop-card-meta"><span>⭐ {{ shop.rating }}</span><span>{{ shop.category }}</span></div>
+          <div class="shop-card-tags">
+            {% if shop.dine_in %}<span class="tag tag-gold">🍽️ Dine-In</span>{% endif %}
+            {% if shop.delivery %}<span class="tag tag-primary">🛵 Delivery</span>{% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if items %}
+    <h2 class="section-title" style="margin-bottom:1rem;font-size:1.1rem">Food Items</h2>
+    <div class="grid-4">
+      {% for item in items %}
+      <div class="food-card">
+        <div class="food-card-img">🍽️</div>
+        <div class="food-card-body">
+          <div style="display:flex;align-items:center;gap:0.4rem;margin-bottom:0.3rem">
+            <span class="veg-dot {{ item.veg_nonveg }}"></span>
+            <h4 class="food-card-name" style="margin:0">{{ item.name }}</h4>
+          </div>
+          <p class="food-card-shop">{{ item.shop.name }}</p>
+          <div class="food-card-footer">
+            <span class="food-price">₹{{ item.price|int }}</span>
+            <button class="add-btn" onclick="addToCart({{ item.id }}, this)"><i class="ri-add-line"></i></button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if not shops and not items %}
+    <div style="text-align:center;padding:5rem">
+      <div style="font-size:4rem;margin-bottom:1rem">🔍</div>
+      <h2 style="font-size:1.25rem;font-weight:700">No results for "{{ query }}"</h2>
+      <p style="color:var(--text-muted);margin-top:0.5rem">Try biryani, momos, BBQ, or shawarma</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if(q) window.location.href = '/search?q=' + encodeURIComponent(q);
+}
+function addToCart(itemId, btn) {
+  fetch('/orders/cart/add', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({item_id: itemId, quantity:1, order_type:'TAKEAWAY'})
+  }).then(r => r.json()).then(d => {
+    if(d.success) { updateCartBadge(d.cart_count); showToast(d.message,'success'); }
+  });
+}
+</script>
+{% endblock %}

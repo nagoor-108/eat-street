@@ -1,0 +1,296 @@
+{
+  "chicken_biryani.jpg": {
+    "url": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken Biryani / Dum Biryani",
+    "photographer": "Mufid Majnun",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "mutton_biryani.jpg": {
+    "url": "https://images.unsplash.com/photo-1633945274405-b6c8069047b0?w=600&auto=format&fit=crop&q=80",
+    "food": "Mutton Biryani / Mutton Dum Biryani",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "veg_biryani.jpg": {
+    "url": "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=600&auto=format&fit=crop&q=80",
+    "food": "Veg Biryani",
+    "photographer": "Amirali Mirhashemian",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "paneer_biryani.jpg": {
+    "url": "https://images.unsplash.com/photo-1645177628172-a94c1f96e6db?w=600&auto=format&fit=crop&q=80",
+    "food": "Paneer Biryani",
+    "photographer": "Shalender Kumar",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "bbq_chicken_wings.jpg": {
+    "url": "https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=600&auto=format&fit=crop&q=80",
+    "food": "BBQ Chicken Wings",
+    "photographer": "Chad Montano",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chicken_tikka.jpg": {
+    "url": "https://images.unsplash.com/photo-1599488615731-7e5c2823ff28?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken Tikka / Chicken Kabab",
+    "photographer": "Vivek Kumar",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chicken_malai_tikka.jpg": {
+    "url": "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken Malai Tikka",
+    "photographer": "Abhishek Sanwa Limbu",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chicken_lollipops.jpg": {
+    "url": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken Lollipops / Sticks / Combos",
+    "photographer": "Shreyak Singh",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chicken_leg_kabab.jpg": {
+    "url": "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken Leg Kabab",
+    "photographer": "Victoria Shes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "seekh_kabab.jpg": {
+    "url": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&auto=format&fit=crop&q=80",
+    "food": "Seekh Kabab / Peri-Peri Chicken",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "paneer_tikka.jpg": {
+    "url": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&auto=format&fit=crop&q=80",
+    "food": "BBQ Paneer Tikka",
+    "photographer": "Hari Nandakumar",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "bbq_party_platter.jpg": {
+    "url": "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80",
+    "food": "Party Platter BBQ",
+    "photographer": "Emerson Vieira",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chicken_shawarma.jpg": {
+    "url": "https://images.unsplash.com/photo-1529006557810-274b9b2fc783?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken Shawarma / Double Shawarma",
+    "photographer": "Eiliv Aceron",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "shawarma_plate.jpg": {
+    "url": "https://images.unsplash.com/photo-1561651823-34feb02250e4?w=600&auto=format&fit=crop&q=80",
+    "food": "Shawarma Plate",
+    "photographer": "Dovile Ramoskaite",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "paneer_shawarma.jpg": {
+    "url": "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&auto=format&fit=crop&q=80",
+    "food": "Paneer Shawarma / Egg Shawarma",
+    "photographer": "Niranjan _shots",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "steamed_momos.jpg": {
+    "url": "https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=600&auto=format&fit=crop&q=80",
+    "food": "Steamed Veg / Chicken / Cheese Momos",
+    "photographer": "Shaurya Sagar",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "fried_momos.jpg": {
+    "url": "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&auto=format&fit=crop&q=80",
+    "food": "Fried Veg / Chicken Momos",
+    "photographer": "Mae Mu",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "tandoor_momos.jpg": {
+    "url": "https://images.unsplash.com/photo-1496116218417-1a781b1c416c?w=600&auto=format&fit=crop&q=80",
+    "food": "Tandoor Momos",
+    "photographer": "Charles Deluvio",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "egg_frankie.jpg": {
+    "url": "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?w=600&auto=format&fit=crop&q=80",
+    "food": "Egg Frankie / Double Egg Frankie",
+    "photographer": "Niranjan _shots",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chicken_frankie.jpg": {
+    "url": "https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken Frankie",
+    "photographer": "Eiliv Aceron",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "paneer_frankie.jpg": {
+    "url": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&auto=format&fit=crop&q=80",
+    "food": "Paneer Frankie / Veg Frankie",
+    "photographer": "Mufid Majnun",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "veg_noodles.jpg": {
+    "url": "https://images.unsplash.com/photo-1585032226651-759b368d7246?w=600&auto=format&fit=crop&q=80",
+    "food": "Veg Noodles",
+    "photographer": "Olayinka Babalola",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chicken_noodles.jpg": {
+    "url": "https://images.unsplash.com/photo-1612927601601-6638404737ce?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken Noodles",
+    "photographer": "Chad Montano",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "veg_fried_rice.jpg": {
+    "url": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&auto=format&fit=crop&q=80",
+    "food": "Veg Fried Rice",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chicken_fried_rice.jpg": {
+    "url": "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken Fried Rice",
+    "photographer": "Eiliv Aceron",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "veg_manchurian.jpg": {
+    "url": "https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=600&auto=format&fit=crop&q=80",
+    "food": "Veg / Chicken Manchurian",
+    "photographer": "Abhishek Sanwa Limbu",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chicken_65.jpg": {
+    "url": "https://images.unsplash.com/photo-1610057099431-d73a1c9d2f2f?w=600&auto=format&fit=crop&q=80",
+    "food": "Chicken 65",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "spring_rolls.jpg": {
+    "url": "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80",
+    "food": "Veg Spring Rolls",
+    "photographer": "Mae Mu",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "mushroom_chilli.jpg": {
+    "url": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80",
+    "food": "Mushroom Chilli / Mushroom 65",
+    "photographer": "Brooke Lark",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "mushroom_fry.jpg": {
+    "url": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop&q=80",
+    "food": "Mushroom Fry / Mushroom Pakodi",
+    "photographer": "Lily Banse",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "onion_pakodi.jpg": {
+    "url": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&auto=format&fit=crop&q=80",
+    "food": "Onion Pakodi / Mix Veg Pakodi",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "paneer_pakodi.jpg": {
+    "url": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&auto=format&fit=crop&q=80",
+    "food": "Paneer Pakodi",
+    "photographer": "Hari Nandakumar",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "classic_waffle.jpg": {
+    "url": "https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=600&auto=format&fit=crop&q=80",
+    "food": "Classic Waffle / Strawberry Waffle",
+    "photographer": "Mae Mu",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chocolate_waffle.jpg": {
+    "url": "https://images.unsplash.com/photo-1568051243851-f9b136146e97?w=600&auto=format&fit=crop&q=80",
+    "food": "Chocolate Belgian Waffle",
+    "photographer": "Mae Mu",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "ice_cream_waffle.jpg": {
+    "url": "https://images.unsplash.com/photo-1587314168485-3236d6710814?w=600&auto=format&fit=crop&q=80",
+    "food": "Ice Cream Waffle",
+    "photographer": "Demi DeHerrera",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chocolate_milkshake.jpg": {
+    "url": "https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=600&auto=format&fit=crop&q=80",
+    "food": "Chocolate Milkshake / Oreo Shake",
+    "photographer": "Victor Rutka",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "vanilla_ice_cream.jpg": {
+    "url": "https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=600&auto=format&fit=crop&q=80",
+    "food": "Vanilla Ice Cream",
+    "photographer": "Courtney Cook",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "pani_puri.jpg": {
+    "url": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&auto=format&fit=crop&q=80",
+    "food": "Pani Puri / Sev Puri",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "bhel_puri.jpg": {
+    "url": "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&auto=format&fit=crop&q=80",
+    "food": "Bhel Puri / Chaat",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "samosa.jpg": {
+    "url": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&auto=format&fit=crop&q=80",
+    "food": "Samosa / Chaat Samosa",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "chole_bhature.jpg": {
+    "url": "https://images.unsplash.com/photo-1626132647523-66f5bf380027?w=600&auto=format&fit=crop&q=80",
+    "food": "Chole Bhature",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  },
+  "traditional_thali.jpg": {
+    "url": "https://images.unsplash.com/photo-1610057099431-d73a1c9d2f2f?w=600&auto=format&fit=crop&q=80",
+    "food": "Pottikalu / Millet Idly / Ragi Sangati / Natukodi Pulusu",
+    "photographer": "Saveurs Secretes",
+    "source": "Unsplash",
+    "license": "Unsplash License (Free commercial & non-commercial use)"
+  }
+}

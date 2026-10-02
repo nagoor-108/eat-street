@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}Your Cart — Eat Street{% endblock %}
+{% block content %}
+<div style="padding-top:90px;min-height:100vh">
+  <div class="container" style="max-width:900px;padding-top:2rem;padding-bottom:4rem">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;margin-bottom:2rem">
+      <div>
+        <h1 style="font-size:1.6rem;font-weight:800">🛒 Your Cart</h1>
+        <p style="color:var(--text-muted);font-size:0.875rem;margin-top:0.3rem">
+          {% if cart_items %}
+          {{ total_qty }} items from {{ grouped_by_shop|length }} {{ 'stall' if grouped_by_shop|length == 1 else 'stalls' }}
+          {% else %}
+          Your cart is currently empty
+          {% endif %}
+        </p>
+      </div>
+      {% if cart_items %}
+      <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap">
+        <button onclick="clearEntireCart()" class="btn btn-glass btn-sm" style="color:var(--danger);border-color:rgba(255,82,82,0.3)">
+          <i class="ri-delete-bin-line"></i> Clear / Start New Order
+        </button>
+        <a href="{{ url_for('shops.list_shops') }}" class="btn btn-glass btn-sm">
+          <i class="ri-add-line"></i> Add More Food
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if cart_items %}
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
+      <!-- Cart Items List Grouped by Shop -->
+      <div style="display:flex;flex-direction:column;gap:1.5rem">
+        {% for shop, items in grouped_by_shop.items() %}
+        <div class="card" style="padding:1.25rem;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:0.75rem;margin-bottom:0.75rem;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:0.5rem">
+              <span style="font-size:1.2rem">🏪</span>
+              <span style="font-weight:700;font-size:1rem;color:#fff">{{ shop.name }}</span>
+              <span style="font-size:0.75rem;color:var(--text-muted)">({{ shop.category }})</span>
+            </div>
+            <span class="badge" style="font-size:0.75rem;background:rgba(255,59,0,0.1);color:var(--primary);border:1px solid rgba(255,59,0,0.25);padding:2px 8px;border-radius:12px">
+              {{ items|length }} {{ 'item' if items|length == 1 else 'items' }}
+            </span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:0.75rem">
+            {% for item in items %}
+            <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem;background:var(--bg-surface);border-radius:10px;border:1px solid var(--border)">
+              <!-- Food Image -->
+              <div style="width:65px;height:65px;border-radius:8px;overflow:hidden;flex-shrink:0;background:#222;position:relative">
+                <img src="{{ url_for('static', filename='images/' + resolve_menu_item_image(item.menu_item)) }}"
+                     alt="{{ item.menu_item.name }}"
+                     onerror="this.src='{{ url_for('static', filename='images/default_food.jpg') }}'"
+                     style="width:100%;height:100%;object-fit:cover">
+              </div>
+
+              <!-- Details -->
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:0.4rem">
+                  {% if item.menu_item.veg_nonveg == 'veg' %}
+                  <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#4caf50;flex-shrink:0" title="Veg"></span>
+                  {% elif item.menu_item.veg_nonveg == 'egg' %}
+                  <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ffb300;flex-shrink:0" title="Egg"></span>
+                  {% else %}
+                  <span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f44336;flex-shrink:0" title="Non-Veg"></span>
+                  {% endif %}
+                  <span style="font-weight:700;font-size:0.92rem;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ item.menu_item.name }}</span>
+                </div>
+                <div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">
+                  {{ item.menu_item.quantity_desc if item.menu_item.quantity_desc else '' }} · Mode: {{ item.order_type }}
+                </div>
+                <div style="font-size:0.85rem;color:var(--primary);font-weight:700;margin-top:4px">
+                  ₹{{ item.menu_item.price|int }} <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400">each</span>
+                </div>
+              </div>
+
+              <!-- Quantity Controls -->
+              <div style="display:flex;align-items:center;gap:0.5rem">
+                <div class="qty-control" style="display:flex;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+                  <button onclick="updateQty({{ item.id }}, {{ item.quantity - 1 }})" style="background:transparent;border:none;color:#fff;padding:4px 10px;cursor:pointer;font-weight:700;font-size:1rem">−</button>
+                  <span class="qty-num" style="min-width:24px;text-align:center;font-weight:700;font-size:0.88rem">{{ item.quantity }}</span>
+                  <button onclick="updateQty({{ item.id }}, {{ item.quantity + 1 }})" style="background:transparent;border:none;color:#fff;padding:4px 10px;cursor:pointer;font-weight:700;font-size:1rem">+</button>
+                </div>
+                <button class="btn btn-glass btn-sm btn-icon" onclick="removeItem({{ item.id }})" title="Remove item" style="color:var(--danger)">
+                  <i class="ri-delete-bin-line"></i>
+                </button>
+              </div>
+
+              <!-- Subtotal -->
+              <div style="min-width:80px;text-align:right;font-weight:800;font-size:0.95rem;color:var(--primary)">
+                ₹{{ (item.menu_item.price * item.quantity)|int }}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Sticky Order Summary -->
+      <div style="position:sticky;top:90px">
+        <div class="card" style="padding:1.5rem">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem">Order Summary</h3>
+          
+          <div class="cart-total-row" style="display:flex;justify-content:space-between;margin-bottom:0.6rem;font-size:0.88rem">
+            <span style="color:var(--text-muted)">Total Items</span>
+            <span style="font-weight:700">{{ total_qty }}</span>
+          </div>
+
+          <div class="cart-total-row" style="display:flex;justify-content:space-between;margin-bottom:0.6rem;font-size:0.88rem">
+            <span style="color:var(--text-muted)">Stalls Involved</span>
+            <span style="font-weight:700">{{ grouped_by_shop|length }}</span>
+          </div>
+
+          <div class="cart-total-row" style="display:flex;justify-content:space-between;margin-bottom:0.6rem;font-size:0.88rem">
+            <span style="color:var(--text-muted)">Item Subtotal</span>
+            <span>₹{{ total|int }}</span>
+          </div>
+
+          <div class="cart-total-row" style="display:flex;justify-content:space-between;margin-bottom:0.6rem;font-size:0.88rem">
+            <span style="color:var(--text-muted)">Taxes & Packaging</span>
+            <span style="color:#4caf50;font-weight:600">Included</span>
+          </div>
+
+          <hr style="border:0;border-top:1px solid var(--border);margin:1rem 0">
+
+          <div class="cart-total-row grand" style="display:flex;justify-content:space-between;font-size:1.2rem;font-weight:800;margin-bottom:1.25rem">
+            <span>Grand Total</span>
+            <span style="color:var(--primary)">₹{{ total|int }}</span>
+          </div>
+
+          {% if grouped_by_shop|length > 1 %}
+          <div style="padding:0.75rem;background:rgba(255,179,0,0.08);border:1px solid rgba(255,179,0,0.25);border-radius:8px;font-size:0.78rem;color:var(--gold);line-height:1.4;margin-bottom:1rem">
+            ℹ️ You have items from <strong>{{ grouped_by_shop|length }} different stalls</strong>. Checkout will automatically create separate orders for each stall.
+          </div>
+          {% endif %}
+
+          {% if current_user.is_authenticated %}
+          <a href="{{ url_for('orders.checkout') }}" class="btn btn-primary w-100 btn-lg" style="display:flex;align-items:center;justify-content:center;gap:0.5rem">
+            Proceed to Checkout <i class="ri-arrow-right-line"></i>
+          </a>
+          {% else %}
+          <div style="padding:0.75rem;background:rgba(255,59,0,0.08);border:1px dashed rgba(255,59,0,0.35);border-radius:10px;font-size:0.82rem;color:var(--text-muted);margin-bottom:0.75rem;text-align:center;line-height:1.4">
+            <i class="ri-lock-line" style="color:var(--primary);font-size:1rem;display:inline-block;vertical-align:middle;margin-right:2px"></i>
+            Please <strong>Login</strong> or <strong>Register</strong> to place your order. Your cart items are saved!
+          </div>
+          <a href="{{ url_for('auth.login', next=url_for('orders.checkout')) }}" class="btn btn-primary w-100 btn-lg" style="display:flex;align-items:center;justify-content:center;gap:0.5rem">
+            <i class="ri-user-shared-line"></i> Login / Register to Checkout <i class="ri-arrow-right-line"></i>
+          </a>
+          {% endif %}
+          <a href="{{ url_for('shops.list_shops') }}" class="btn btn-glass w-100" style="margin-top:0.6rem;text-align:center">
+            Continue Shopping
+          </a>
+        </div>
+      </div>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:5rem 1rem;background:var(--bg-card);border:1px solid var(--border);border-radius:16px">
+      <div style="font-size:5rem;margin-bottom:1rem">🛒</div>
+      <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:0.5rem">Your Cart is Empty</h2>
+      <p style="color:var(--text-muted);margin-bottom:1.5rem">Explore authentic Kakinada street food from our 10 stalls!</p>
+      <a href="{{ url_for('shops.list_shops') }}" class="btn btn-primary btn-lg">Browse Stalls & Menu</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function updateQty(cartId, qty) {
+  try {
+    const resp = await fetch('/orders/cart/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cart_id: cartId, quantity: qty })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      if (typeof updateCartBadge === 'function') updateCartBadge(data.cart_count);
+      location.reload();
+    } else {
+      showToast(data.message || 'Could not update quantity', 'error');
+    }
+  } catch (err) {
+    showToast('Network error updating cart', 'error');
+  }
+}
+
+async function removeItem(cartId) {
+  try {
+    const resp = await fetch('/orders/cart/remove/' + cartId, { method: 'POST' });
+    const data = await resp.json();
+    if (data.success) {
+      if (typeof updateCartBadge === 'function') updateCartBadge(data.cart_count);
+      location.reload();
+    } else {
+      showToast(data.message || 'Could not remove item', 'error');
+    }
+  } catch (err) {
+    showToast('Network error removing item', 'error');
+  }
+}
+
+async function clearEntireCart() {
+  if (!confirm('Are you sure you want to clear your cart and start a fresh order?')) return;
+  try {
+    const resp = await fetch('/orders/cart/clear', { method: 'POST' });
+    const data = await resp.json();
+    if (data.success) {
+      if (typeof updateCartBadge === 'function') updateCartBadge(0);
+      location.reload();
+    } else {
+      showToast(data.message || 'Could not clear cart', 'error');
+    }
+  } catch (err) {
+    showToast('Network error clearing cart', 'error');
+  }
+}
+</script>
+{% endblock %}

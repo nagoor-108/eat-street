@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}Kakinada Eat Street — The Taste of Kakinada{% endblock %}</title>
+  <meta name="description" content="Kakinada Eat Street — AI-Powered Food Delivery, Takeaway & Dine-In Marketplace">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Dancing+Script:wght@700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Remix Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.0.0/fonts/remixicon.css" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ═══ NAVBAR ═══════════════════════════════════════════════════════════ -->
+<nav class="navbar" id="navbar">
+  <div class="navbar-inner">
+    <!-- Logo -->
+    <a href="{{ url_for('home.index') }}" class="navbar-logo">
+      <div class="logo-icon">🍴</div>
+      <div class="logo-text">
+        <span class="logo-main">@EATSTREET</span>
+        <span class="logo-sub">The Taste of Kakinada</span>
+      </div>
+    </a>
+
+    <!-- Links -->
+    <ul class="navbar-links" id="navLinks">
+      <li><a href="{{ url_for('home.index') }}" class="{{ 'active' if request.endpoint == 'home.index' else '' }}">Home</a></li>
+      <li><a href="{{ url_for('shops.list_shops') }}" class="{{ 'active' if request.endpoint == 'shops.list_shops' else '' }}">Shops</a></li>
+      <li><a href="{{ url_for('dine_in.reserve', shop_id=1) }}" class="{{ 'active' if request.endpoint == 'dine_in.reserve' else '' }}">Book Table</a></li>
+      <li><a href="{{ url_for('orders.my_orders') }}" class="{{ 'active' if request.endpoint == 'orders.my_orders' else '' }}">My Orders</a></li>
+      <li><a href="{{ url_for('dine_in.my_reservations') }}" class="{{ 'active' if request.endpoint == 'dine_in.my_reservations' else '' }}">My Reservations</a></li>
+      {% if current_user.is_authenticated and current_user.role in ('vendor','admin') %}
+      <li><a href="{{ url_for('vendor.dashboard') }}">Dashboard</a></li>
+      {% endif %}
+    </ul>
+
+    <!-- Actions -->
+    <div class="navbar-actions">
+      <a href="{{ url_for('orders.cart') }}" class="cart-btn" title="Cart">
+        <i class="ri-shopping-cart-2-line"></i>
+        {% if cart_count > 0 %}
+        <span class="cart-badge">{{ cart_count }}</span>
+        {% endif %}
+      </a>
+      {% if current_user.is_authenticated %}
+      <div class="dropdown" style="position:relative">
+        <button class="btn btn-glass btn-sm" onclick="toggleDropdown(this)">
+          <i class="ri-user-line"></i>
+          {{ current_user.name.split()[0] }}
+          <i class="ri-arrow-down-s-line"></i>
+        </button>
+        <div class="dropdown-menu" id="userDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:0.5rem;min-width:180px;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,0.4)">
+          <a href="{{ url_for('auth.profile') }}" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.9rem;border-radius:8px;font-size:0.85rem;color:var(--text-muted);transition:all 0.2s">
+            <i class="ri-user-line"></i> Profile
+          </a>
+          <a href="{{ url_for('orders.my_orders') }}" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.9rem;border-radius:8px;font-size:0.85rem;color:var(--text-muted);transition:all 0.2s">
+            <i class="ri-shopping-bag-3-line"></i> My Orders
+          </a>
+          <a href="{{ url_for('dine_in.my_reservations') }}" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.9rem;border-radius:8px;font-size:0.85rem;color:var(--text-muted);transition:all 0.2s">
+            <i class="ri-calendar-line"></i> My Reservations
+          </a>
+          {% if current_user.role in ('vendor','admin') %}
+          <a href="{{ url_for('vendor.dashboard') }}" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.9rem;border-radius:8px;font-size:0.85rem;color:var(--text-muted);transition:all 0.2s">
+            <i class="ri-store-line"></i> Dashboard
+          </a>
+          {% endif %}
+          <hr style="border-color:var(--border);margin:0.3rem 0">
+          <form method="POST" action="{{ url_for('auth.logout') }}" style="margin:0">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.9rem;border:0;background:transparent;width:100%;border-radius:8px;font-size:0.85rem;color:var(--primary);cursor:pointer">
+              <i class="ri-logout-box-line"></i> Logout
+            </button>
+          </form>
+        </div>
+      </div>
+      {% else %}
+      <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-sm">Login</a>
+      <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Sign Up</a>
+      {% endif %}
+      <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ FLASH MESSAGES ════════════════════════════════════════════════════ -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="toast-container" id="flashContainer">
+    {% for category, message in messages %}
+    <div class="toast {{ category }}" id="flashMsg">
+      {% if category == 'success' %}✅{% elif category == 'danger' %}❌{% elif category == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<!-- ═══ MAIN CONTENT ══════════════════════════════════════════════════════ -->
+<main>
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ═══ AI CHAT WIDGET ════════════════════════════════════════════════════ -->
+{% if request.endpoint not in ('dine_in.kitchen', 'vendor.dashboard') %}
+<button class="chat-fab" id="chatFab" title="Ask AI Assistant" onclick="toggleChat()">
+  <i class="ri-sparkling-2-line"></i>
+</button>
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">🤖</div>
+      <div>
+        <div class="chat-title">EatStreet AI</div>
+        <div class="chat-status" id="chatHeaderStatus">🟢 Online • 3 Languages</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:0.4rem">
+      <button class="chat-close" onclick="toggleChat()" title="Close chat"><i class="ri-close-line"></i></button>
+    </div>
+  </div>
+
+  <div class="chat-messages" id="chatMessages">
+    <!-- Populated dynamically by ai_chat.js based on selected language -->
+  </div>
+
+  <div class="chat-suggestions" id="chatSuggestions">
+    <button class="chat-suggestion-btn" onclick="sendSuggestion(this)">🍗 Chicken dishes</button>
+    <button class="chat-suggestion-btn" onclick="sendSuggestion(this)">🥦 Veg under ₹100</button>
+    <button class="chat-suggestion-btn" onclick="sendSuggestion(this)">🍽️ Dine-in stalls</button>
+    <button class="chat-suggestion-btn" onclick="sendSuggestion(this)">⭐ Best rated</button>
+  </div>
+
+  <!-- 3-Language Selector Bar directly above input box (Eng, తెలుగు, हिंदी) -->
+  <div class="chat-lang-bar" id="chatLangBar">
+    <span style="font-size:0.72rem;color:var(--text-muted);margin-right:2px;font-weight:600">🌐 Lang:</span>
+    <button type="button" class="chat-lang-tab active" data-lang="en" onclick="changeChatLang('en', true)">
+      <span>🇬🇧</span> Eng
+    </button>
+    <button type="button" class="chat-lang-tab" data-lang="te" onclick="changeChatLang('te', true)">
+      <span>🇮🇳</span> తెలుగు
+    </button>
+    <button type="button" class="chat-lang-tab" data-lang="hi" onclick="changeChatLang('hi', true)">
+      <span>🇮🇳</span> हिंदी
+    </button>
+  </div>
+
+  <div class="chat-input-area">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Ask about food, prices, shops in English…">
+    <button class="chat-send-btn" onclick="sendChat()" title="Send message"><i class="ri-send-plane-line"></i></button>
+  </div>
+</div>
+{% endif %}
+
+<!-- ═══ FOOTER ════════════════════════════════════════════════════════════ -->
+{% block show_footer %}
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="navbar-logo" style="margin-bottom:0.5rem">
+          <div class="logo-icon">🍴</div>
+          <div class="logo-text">
+            <span class="logo-main">@EATSTREET</span>
+            <span class="logo-sub">The Taste of Kakinada</span>
+          </div>
+        </div>
+        <p class="footer-brand-desc">Kakinada Eat Street — Your ultimate food destination at Rama Rao Peta, Kakinada. Rated 4.2/5 by 836+ food lovers.</p>
+        <div style="display:flex;gap:0.5rem">
+          <a href="#" class="btn btn-glass btn-sm btn-icon"><i class="ri-instagram-line"></i></a>
+          <a href="#" class="btn btn-glass btn-sm btn-icon"><i class="ri-youtube-line"></i></a>
+          <a href="#" class="btn btn-glass btn-sm btn-icon"><i class="ri-twitter-x-line"></i></a>
+        </div>
+      </div>
+      <div>
+        <p class="footer-heading">Order Modes</p>
+        <ul class="footer-links">
+          <li><a href="#">🛵 Delivery</a></li>
+          <li><a href="#">🥡 Takeaway</a></li>
+          <li><a href="#">🍽️ Dine-In</a></li>
+          <li><a href="#">📱 QR Ordering</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer-heading">Eat Street</p>
+        <ul class="footer-links">
+          <li><a href="{{ url_for('shops.list_shops') }}">All Shops</a></li>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Vendor Sign Up</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="footer-heading">Location</p>
+        <ul class="footer-links">
+          <li><a href="#">📍 Rama Rao Peta</a></li>
+          <li><a href="#">Kakinada 533001</a></li>
+          <li><a href="#">Andhra Pradesh</a></li>
+          <li><a href="#">⭐ 4.2/5 (836 reviews)</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 Kakinada Eat Street. All rights reserved.</span>
+      <span>Made with ❤️ for Kakinada</span>
+    </div>
+  </div>
+</footer>
+{% endblock %}
+
+<!-- ═══ OVERLAY ═══════════════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay" onclick="closeOverlay()"></div>
+
+<!-- ═══ TOAST CONTAINER ═══════════════════════════════════════════════════ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ═══ JS ════════════════════════════════════════════════════════════════ -->
+  <script>
+    // Attach Flask-WTF's CSRF token to every unsafe JavaScript request.
+    (() => {
+      const nativeFetch = window.fetch.bind(window);
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+      window.fetch = (resource, options = {}) => {
+        const method = (options.method || 'GET').toUpperCase();
+        if (!['GET', 'HEAD', 'OPTIONS', 'TRACE'].includes(method)) {
+          const headers = new Headers(options.headers || {});
+          headers.set('X-CSRFToken', csrfToken);
+          options = { ...options, headers };
+        }
+        return nativeFetch(resource, options);
+      };
+    })();
+  </script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/cart.js') }}"></script>
+<script src="{{ url_for('static', filename='js/ai_chat.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

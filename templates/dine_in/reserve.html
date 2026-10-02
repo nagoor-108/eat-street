@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% block title %}Smart Table Reservation — {{ shop.name }}{% endblock %}
+{% block content %}
+<div style="padding-top:90px;min-height:100vh">
+  <div class="container" style="max-width:900px;padding-top:2rem;padding-bottom:4rem">
+    <div style="margin-bottom:2rem">
+      <a href="{{ url_for('shops.detail', shop_id=shop.id) }}" style="color:var(--text-muted);font-size:0.85rem;display:flex;align-items:center;gap:0.3rem;margin-bottom:0.75rem">
+        <i class="ri-arrow-left-line"></i> Back to {{ shop.name }}
+      </a>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem">
+        <div>
+          <h1 style="font-size:1.6rem;font-weight:800">🪑 Smart Table Reservation</h1>
+          <p style="color:var(--text-muted);font-size:0.875rem;margin-top:0.3rem">{{ shop.name }} — {{ shop.location }} ({{ shop.opening_time }} – {{ shop.closing_time }})</p>
+        </div>
+        <a href="{{ url_for('dine_in.my_reservations') }}" class="btn btn-glass btn-sm">
+          <i class="ri-calendar-line"></i> My Reservations
+        </a>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1.1fr;gap:1.5rem;align-items:start">
+      <!-- Booking Form -->
+      <div class="card" style="padding:1.5rem">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1.25rem;display:flex;align-items:center;gap:0.5rem">
+          <span>📋</span> 1. Select Party & Preferences
+        </h3>
+        <form id="reserveForm">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          
+          <div class="form-group">
+            <label class="form-label">Booking Date</label>
+            <input type="date" name="date" id="resDate" class="form-control" required onchange="fetchAvailableTables()">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Booking Time</label>
+            <select name="time" id="resTime" class="form-control" onchange="fetchAvailableTables()">
+              {% for h in range(11, 24) %}
+              {% for m in ['00','30'] %}
+              {% set t = '%02d:%s'|format(h, m) %}
+              {% if t >= shop.opening_time and t <= shop.closing_time %}
+              <option value="{{ t }}" {{ 'selected' if t=='19:00' else '' }}>{{ t }}</option>
+              {% endif %}
+              {% endfor %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Number of Persons</label>
+            <select name="people_count" id="resPeople" class="form-control" onchange="fetchAvailableTables()">
+              {% for i in range(1, 11) %}
+              <option value="{{ i }}" {{ 'selected' if i==2 else '' }}>{{ i }} {{ 'person' if i == 1 else 'people' }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Seating Preference</label>
+            <select name="seating_preference" id="resPref" class="form-control" onchange="fetchAvailableTables()">
+              <option value="Any">✨ Any (Best available)</option>
+              <option value="Window">🪟 Window</option>
+              <option value="Near entrance">🚪 Near entrance</option>
+              <option value="Family area">👨‍👩‍👧 Family area</option>
+              <option value="Quiet area">🌿 Quiet area</option>
+            </select>
+          </div>
+
+          <hr style="border:0;border-top:1px solid var(--border);margin:1.25rem 0">
+
+          <h4 style="font-size:0.9rem;font-weight:700;margin-bottom:1rem">Contact Details</h4>
+
+          <div class="form-group">
+            <label class="form-label">Your Name <span style="color:var(--primary)">*</span></label>
+            <input type="text" name="guest_name" class="form-control" value="{{ current_user.name if current_user.is_authenticated else '' }}" placeholder="Enter full name" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" name="guest_phone" class="form-control" value="{{ current_user.phone if current_user.is_authenticated else '' }}" placeholder="10-digit mobile number">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Special Request (Optional)</label>
+            <textarea name="note" class="form-control" rows="2" placeholder="Birthday celebration, anniversary, high chair needed…"></textarea>
+          </div>
+
+          <input type="hidden" name="table_id" id="selectedTableId" required>
+          
+          <button type="submit" id="submitBtn" class="btn btn-gold w-100 btn-lg" style="margin-top:1rem" disabled>
+            <i class="ri-calendar-check-line"></i> Select a Table First
+          </button>
+        </form>
+      </div>
+
+      <!-- Smart Table Selection Map -->
+      <div class="card" style="padding:1.5rem">
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem">
+          <span>🪑</span> 2. Choose Your Table
+        </h3>
+        
+        <div id="filterMessage" style="margin-bottom:1rem;padding:0.75rem 1rem;border-radius:10px;font-size:0.84rem;line-height:1.5;background:rgba(255,179,0,0.08);border:1px solid rgba(255,179,0,0.25);color:var(--gold)">
+          Checking available tables…
+        </div>
+
+        <div id="tableGridContainer" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(110px, 1fr));gap:0.75rem;margin-top:1rem">
+          <!-- Dynamically populated tables -->
+        </div>
+
+        <div id="tableSelMsg" style="margin-top:1.25rem;padding:0.85rem;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);border-radius:10px;font-size:0.85rem;color:#4caf50;display:none">
+          <i class="ri-checkbox-circle-line"></i> <span id="selectedTableText">Table selected</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+      <div class="modal-content" style="max-width:500px">
+        <div class="modal-body" style="text-align:center;padding:2.5rem 2rem">
+          <div style="font-size:4rem;margin-bottom:1rem">🎉</div>
+          <h2 style="font-size:1.35rem;font-weight:800;margin-bottom:0.5rem;color:#fff">Table Reserved Successfully!</h2>
+          <div id="successDetails" style="text-align:left;background:var(--bg-surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin:1.5rem 0;font-size:0.88rem;line-height:1.7"></div>
+          <div style="display:flex;gap:0.75rem;justify-content:center">
+            <a href="{{ url_for('dine_in.my_reservations') }}" class="btn btn-gold">
+              <i class="ri-calendar-line"></i> View My Reservations
+            </a>
+            <a href="{{ url_for('shops.detail', shop_id=shop.id) }}" class="btn btn-glass">
+              Back to Menu
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const shopId = {{ shop.id }};
+let selectedTableId = null;
+
+// Initialize Date
+const dateInput = document.getElementById('resDate');
+const todayStr = new Date().toISOString().split('T')[0];
+dateInput.min = todayStr;
+dateInput.value = todayStr;
+
+async function fetchAvailableTables() {
+  const date = document.getElementById('resDate').value;
+  const time = document.getElementById('resTime').value;
+  const people = document.getElementById('resPeople').value;
+  const pref = document.getElementById('resPref').value;
+
+  const msgBox = document.getElementById('filterMessage');
+  const grid = document.getElementById('tableGridContainer');
+  const submitBtn = document.getElementById('submitBtn');
+  const selMsg = document.getElementById('tableSelMsg');
+
+  msgBox.textContent = 'Updating table availability…';
+  msgBox.style.display = 'block';
+
+  // Reset selection
+  selectedTableId = null;
+  document.getElementById('selectedTableId').value = '';
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="ri-calendar-check-line"></i> Select a Table First';
+  selMsg.style.display = 'none';
+
+  try {
+    const url = `/dine-in/available-tables/${shopId}?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&people_count=${encodeURIComponent(people)}&preference=${encodeURIComponent(pref)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.success || !data.tables || data.tables.length === 0) {
+      msgBox.className = 'filter-msg warning';
+      msgBox.innerHTML = `⚠️ ${data.message || 'No suitable tables available for this party size and time slot.'}`;
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--text-muted)">No tables available. Please try another time or date.</div>';
+      return;
+    }
+
+    // Set message
+    if (data.preference_matched) {
+      msgBox.innerHTML = `✅ <strong>${data.message}</strong>`;
+      msgBox.style.color = '#4caf50';
+      msgBox.style.background = 'rgba(76,175,80,0.1)';
+      msgBox.style.borderColor = 'rgba(76,175,80,0.3)';
+    } else {
+      msgBox.innerHTML = `ℹ️ <strong>${data.message}</strong>`;
+      msgBox.style.color = 'var(--gold)';
+      msgBox.style.background = 'rgba(255,179,0,0.1)';
+      msgBox.style.borderColor = 'rgba(255,179,0,0.3)';
+    }
+
+    // Render table buttons
+    grid.innerHTML = data.tables.map(t => `
+      <div class="table-cell available" id="tbl-${t.id}" onclick="chooseTable(${t.id}, '${t.number}', ${t.capacity}, '${t.location}')" style="cursor:pointer;background:var(--bg-surface);border:2px solid var(--border);border-radius:12px;padding:0.85rem 0.5rem;text-align:center;transition:all 0.2s">
+        <div style="font-size:1.1rem;font-weight:800;color:#fff">${t.number}</div>
+        <div style="font-size:0.75rem;color:var(--gold);font-weight:600;margin:0.2rem 0">👥 ${t.capacity} seats</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);background:rgba(255,255,255,0.06);border-radius:4px;padding:2px 4px;margin-top:0.2rem">${t.location}</div>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    msgBox.innerHTML = '❌ Error loading table data. Please refresh and try again.';
+  }
+}
+
+function chooseTable(id, number, capacity, location) {
+  document.querySelectorAll('.table-cell').forEach(el => {
+    el.style.borderColor = 'var(--border)';
+    el.style.background = 'var(--bg-surface)';
+    el.style.transform = 'none';
+  });
+
+  const el = document.getElementById(`tbl-${id}`);
+  if (el) {
+    el.style.borderColor = 'var(--primary)';
+    el.style.background = 'rgba(255,59,0,0.12)';
+    el.style.transform = 'scale(1.04)';
+  }
+
+  selectedTableId = id;
+  document.getElementById('selectedTableId').value = id;
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = false;
+  submitBtn.innerHTML = `<i class="ri-calendar-check-line"></i> Confirm Table ${number} Booking`;
+
+  const selMsg = document.getElementById('tableSelMsg');
+  document.getElementById('selectedTableText').innerHTML = `Selected <strong>Table ${number}</strong> (${capacity} seats · ${location})`;
+  selMsg.style.display = 'block';
+}
+
+// Initial fetch on load
+fetchAvailableTables();
+
+// Form Submit Handler
+document.getElementById('reserveForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = 'Reserving…';
+
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd.entries());
+
+  try {
+    const resp = await fetch('/dine-in/reserve/{{ shop.id }}', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(data)
+    });
+
+    const result = await resp.json();
+
+    if (result.success) {
+      document.getElementById('successDetails').innerHTML = `
+        <div><strong>Shop:</strong> ${result.shop_name}</div>
+        <div><strong>Table:</strong> Table ${result.table_number} (${result.capacity} seats)</div>
+        <div><strong>Date & Time:</strong> 📅 ${result.date} at ⏰ ${result.time}</div>
+        <div><strong>Party Size:</strong> 👥 ${result.people_count} people</div>
+        <div><strong>Preference:</strong> ${result.seating_preference}</div>
+        <div><strong>Reservation ID:</strong> #${result.reservation_id}</div>
+      `;
+      document.getElementById('successModal').classList.add('open');
+      document.getElementById('overlay').classList.add('active');
+    } else {
+      showToast(result.message || 'Booking failed. Please try again.', 'error');
+      fetchAvailableTables(); // refresh tables in case slot changed
+    }
+  } catch (err) {
+    showToast('Network error while booking table.', 'error');
+  } finally {
+    submitBtn.disabled = false;
+  }
+});
+</script>
+{% endblock %}

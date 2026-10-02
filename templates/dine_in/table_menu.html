@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% block title %}QR Dine-In — {{ shop.name }}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block content %}
+<div style="min-height:100vh;background:var(--bg);display:flex;flex-direction:column">
+
+  <!-- Top Bar -->
+  <div style="background:linear-gradient(135deg,var(--primary-dark),var(--primary));padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100">
+    <div>
+      <div style="font-size:0.72rem;opacity:0.8;margin-bottom:0.2rem">🍽️ DINE-IN</div>
+      <div style="font-weight:700;font-size:1rem">{{ shop.name }}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:0.72rem;opacity:0.8;margin-bottom:0.2rem">TABLE</div>
+      <div style="font-weight:900;font-size:1.25rem">{{ table.table_number }}</div>
+    </div>
+  </div>
+
+  <!-- Welcome Banner -->
+  <div style="background:var(--bg-card);border-bottom:1px solid var(--border);padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem">
+    <div style="font-size:2rem">👋</div>
+    <div>
+      <div style="font-weight:600;font-size:0.9rem">Welcome! You're at Table {{ table.table_number }}</div>
+      <div style="font-size:0.78rem;color:var(--text-muted)">Browse the menu, add items, and we'll bring it to you.</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex:1;max-width:1100px;margin:0 auto;width:100%;padding:1rem;gap:1.5rem">
+
+    <!-- Left: Menu -->
+    <div style="flex:1;min-width:0">
+      <!-- Category Nav -->
+      <div class="category-pills" style="margin-bottom:1.5rem">
+        {% for cat in categories %}
+        <a href="#dcat-{{ cat.id }}" class="category-pill">{{ cat.name }}</a>
+        {% endfor %}
+      </div>
+
+      {% for cat in categories %}
+      <div id="dcat-{{ cat.id }}" style="margin-bottom:2rem;scroll-margin-top:10px">
+        <h3 style="font-size:0.95rem;font-weight:700;margin-bottom:1rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px">{{ cat.name }}</h3>
+        <div style="display:flex;flex-direction:column;gap:0.5rem">
+          {% for item in cat.items %}
+          {% if item.is_available %}
+          <div style="display:flex;align-items:center;padding:0.85rem;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;gap:0.75rem;transition:all 0.2s" onmouseover="this.style.borderColor='var(--border-accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <span class="veg-dot {{ item.veg_nonveg }}" style="flex-shrink:0"></span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:0.88rem;font-weight:600">{{ item.name }}</div>
+              {% if item.quantity_desc %}<div style="font-size:0.72rem;color:var(--text-sub)">{{ item.quantity_desc }} · ⏱ {{ item.preparation_time }}min</div>{% endif %}
+            </div>
+            <span style="font-weight:700;color:var(--primary);font-size:0.95rem;flex-shrink:0">₹{{ item.price|int }}</span>
+            <div style="display:flex;align-items:center;gap:0.4rem;flex-shrink:0" id="dine-ctrl-{{ item.id }}">
+              <button style="display:none" id="dine-minus-{{ item.id }}" onclick="dineQty({{ item.id }}, -1)" class="btn btn-glass btn-sm btn-icon">−</button>
+              <span id="dine-qty-{{ item.id }}" style="display:none;font-weight:700;min-width:20px;text-align:center;font-size:0.9rem">0</span>
+              <button onclick="dineQty({{ item.id }}, 1, '{{ item.name }}', {{ item.price }})" class="add-btn" id="dine-add-{{ item.id }}"><i class="ri-add-line"></i></button>
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Right: Order Panel + Waiter Buttons -->
+    <div style="width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:1rem;position:sticky;top:10px;align-self:flex-start;max-height:calc(100vh - 80px);overflow-y:auto">
+
+      <!-- Cart -->
+      <div class="card" style="padding:1rem">
+        <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem">
+          🛒 My Order <span id="dineCartCount" style="background:var(--primary);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:0.65rem">0</span>
+        </h3>
+        <div id="dineCartItems" style="min-height:80px;font-size:0.82rem;color:var(--text-muted)">
+          <p style="text-align:center;padding:1rem 0">Add items to order</p>
+        </div>
+        <div class="divider"></div>
+        <div class="flex-between" style="font-weight:700;margin-bottom:0.75rem">
+          <span>Total</span>
+          <span style="color:var(--primary)">₹<span id="dineTotalAmt">0</span></span>
+        </div>
+        <textarea id="dineNote" class="form-control" placeholder="Special instructions…" rows="2" style="font-size:0.8rem;margin-bottom:0.75rem;resize:none"></textarea>
+        <button class="btn btn-primary w-100" onclick="placeDineInOrder()">
+          <i class="ri-send-plane-line"></i> Place Order
+        </button>
+      </div>
+
+      <!-- Waiter Request Buttons -->
+      <div class="card" style="padding:1rem">
+        <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:0.75rem;color:var(--text-muted)">Need something?</h3>
+        <div class="waiter-buttons">
+          <button class="waiter-btn" onclick="waiterReq('WAITER')">
+            <span class="w-icon">🔔</span>Call Waiter
+          </button>
+          <button class="waiter-btn" onclick="waiterReq('WATER')">
+            <span class="w-icon">💧</span>Water
+          </button>
+          <button class="waiter-btn" onclick="waiterReq('BILL')">
+            <span class="w-icon">🧾</span>Bill
+          </button>
+          <button class="waiter-btn" onclick="waiterReq('CLEANING')">
+            <span class="w-icon">🧹</span>Clean Table
+          </button>
+        </div>
+      </div>
+
+      <!-- Order Status (if any) -->
+      <div class="card" style="padding:1rem" id="orderStatusPanel" style="display:none">
+        <h3 style="font-size:0.85rem;font-weight:700;margin-bottom:0.75rem">📦 Order Status</h3>
+        <div id="orderStatusContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const QR_CODE = '{{ table.qr_code }}';
+let dineCart = {};   // {item_id: {name, price, qty}}
+
+function dineQty(itemId, delta, name, price) {
+  if (!dineCart[itemId]) dineCart[itemId] = {name: name || 'Item', price: price || 0, qty: 0};
+  dineCart[itemId].qty += delta;
+  if (dineCart[itemId].qty < 0) dineCart[itemId].qty = 0;
+
+  const qtyEl   = document.getElementById('dine-qty-'   + itemId);
+  const minusEl = document.getElementById('dine-minus-' + itemId);
+  const addEl   = document.getElementById('dine-add-'   + itemId);
+
+  if (dineCart[itemId].qty === 0) {
+    delete dineCart[itemId];
+    if (qtyEl)   { qtyEl.style.display = 'none'; qtyEl.textContent = '0'; }
+    if (minusEl)   minusEl.style.display = 'none';
+    if (addEl)     addEl.classList.add('add-btn');
+  } else {
+    if (qtyEl)   { qtyEl.style.display = 'block'; qtyEl.textContent = dineCart[itemId].qty; }
+    if (minusEl)   minusEl.style.display = 'flex';
+  }
+  renderDineCart();
+}
+
+function renderDineCart() {
+  const el    = document.getElementById('dineCartItems');
+  const total = document.getElementById('dineTotalAmt');
+  const count = document.getElementById('dineCartCount');
+  const keys  = Object.keys(dineCart);
+  if (keys.length === 0) {
+    el.innerHTML = '<p style="text-align:center;padding:1rem 0;color:var(--text-muted)">Add items to order</p>';
+    total.textContent = '0';
+    count.textContent = '0';
+    return;
+  }
+  let html = '', grandTotal = 0, totalQty = 0;
+  keys.forEach(id => {
+    const item = dineCart[id];
+    const subtotal = item.price * item.qty;
+    grandTotal += subtotal;
+    totalQty   += item.qty;
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.3rem 0;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <div>
+        <div style="font-size:0.82rem;font-weight:600">${item.name}</div>
+        <div style="font-size:0.72rem;color:var(--text-muted)">× ${item.qty}</div>
+      </div>
+      <span style="font-weight:700;color:var(--primary);font-size:0.85rem">₹${subtotal}</span>
+    </div>`;
+  });
+  el.innerHTML = html;
+  total.textContent = grandTotal;
+  count.textContent = totalQty;
+}
+
+function placeDineInOrder() {
+  const keys = Object.keys(dineCart);
+  if (keys.length === 0) { showToast('Add items first!', 'error'); return; }
+  const items = keys.map(id => ({item_id: parseInt(id), quantity: dineCart[id].qty}));
+  const note  = document.getElementById('dineNote').value;
+
+  fetch('/dine-in/order', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({qr_code: QR_CODE, items, note})
+  }).then(r => r.json()).then(data => {
+    if (data.success) {
+      showToast('✅ Order placed! Kitchen notified.', 'success');
+      dineCart = {};
+      document.querySelectorAll('[id^=dine-qty-]').forEach(el => { el.style.display='none'; el.textContent='0'; });
+      document.querySelectorAll('[id^=dine-minus-]').forEach(el => el.style.display='none');
+      renderDineCart();
+      // Show status panel
+      const panel = document.getElementById('orderStatusPanel');
+      if (panel) {
+        panel.style.display = 'block';
+        document.getElementById('orderStatusContent').innerHTML = `
+          <div style="font-size:0.85rem">
+            <div style="margin-bottom:0.5rem"><strong>Order #${data.order_number}</strong></div>
+            <div style="color:var(--primary)">🍳 Kitchen preparing your food…</div>
+            <div style="color:var(--text-muted);font-size:0.78rem;margin-top:0.3rem">Total: ₹${data.total}</div>
+          </div>`;
+      }
+    } else {
+      showToast(data.message || 'Error placing order', 'error');
+    }
+  }).catch(() => showToast('Network error', 'error'));
+}
+
+function waiterReq(type) {
+  fetch('/dine-in/waiter/request', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({qr_code: QR_CODE, request_type: type})
+  }).then(r => r.json()).then(data => {
+    showToast(data.message || 'Request sent!', 'success');
+  }).catch(() => showToast('Could not send request', 'error'));
+}
+</script>
+{% endblock %}

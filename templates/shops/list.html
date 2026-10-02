@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}All Shops — Kakinada Eat Street{% endblock %}
+{% block content %}
+<div style="padding-top:70px;min-height:100vh">
+  <div class="container" style="padding-top:2.5rem;padding-bottom:4rem">
+    <div class="section-header">
+      <div>
+        <h1 class="section-title">All <span>Shops</span></h1>
+        <p class="section-subtitle">{{ shops|length }} vendors at Eat Street</p>
+      </div>
+      <div class="search-bar" style="max-width:300px">
+        <i class="ri-search-line" style="color:var(--text-muted)"></i>
+        <input type="text" id="shopSearch" placeholder="Search shops…" oninput="filterShops(this.value)">
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:2rem">
+      <button class="category-pill active" onclick="filterCat(this,'')" data-cat="">🍴 All</button>
+      {% set cats = shops|map(attribute='category')|unique|list %}
+      {% for cat in cats %}
+      <button class="category-pill" onclick="filterCat(this,'{{ cat }}')" data-cat="{{ cat }}">{{ cat }}</button>
+      {% endfor %}
+      <button class="category-pill" onclick="filterService(this,'dine_in')" data-svc="dine_in">🍽️ Dine-In</button>
+      <button class="category-pill" onclick="filterService(this,'delivery')" data-svc="delivery">🛵 Delivery</button>
+    </div>
+
+    <div class="grid-3" id="shopListGrid">
+      {% for shop in shops %}
+      <a href="{{ url_for('shops.detail', shop_id=shop.id) }}"
+         class="card shop-card"
+         data-name="{{ shop.name|lower }}"
+         data-cat="{{ shop.category }}"
+         data-dine_in="{{ 'true' if shop.dine_in else 'false' }}"
+         data-delivery="{{ 'true' if shop.delivery else 'false' }}"
+         style="overflow:hidden;text-decoration:none;display:block">
+        <!-- Shop Image -->
+        <div style="position:relative;height:190px;overflow:hidden;background:var(--bg-surface)">
+          <img
+            src="{{ url_for('static', filename='images/shop_' + shop.shop_code + '.jpg') }}"
+            alt="{{ shop.name }}"
+            style="width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease"
+            onerror="this.src='{{ url_for('static', filename='images/default_shop.jpg') }}'"
+            onmouseover="this.style.transform='scale(1.05)'"
+            onmouseout="this.style.transform='scale(1)'"
+          >
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.65) 0%,transparent 55%)"></div>
+          <span style="position:absolute;top:10px;left:10px;background:rgba(255,59,0,0.85);color:#fff;font-size:0.7rem;font-weight:700;padding:3px 10px;border-radius:20px">{{ shop.shop_code }}</span>
+          <span style="position:absolute;top:10px;right:10px;background:rgba(0,0,0,0.6);color:#FFB300;font-size:0.78rem;font-weight:700;padding:3px 8px;border-radius:20px">⭐ {{ shop.rating }}</span>
+          <!-- Shop name on image -->
+          <div style="position:absolute;bottom:10px;left:12px;right:12px">
+            <div style="font-size:1rem;font-weight:800;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,0.8)">{{ shop.name }}</div>
+            <div style="font-size:0.72rem;color:rgba(255,255,255,0.7)">{{ shop.telugu_name }}</div>
+          </div>
+        </div>
+        <!-- Card Body -->
+        <div class="shop-card-body">
+          <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ shop.description }}</p>
+          <div class="shop-card-meta">
+            <span>🕐 {{ shop.opening_time }}–{{ shop.closing_time }}</span>
+            <span>{{ shop.total_reviews }} reviews</span>
+          </div>
+          <div class="shop-card-tags">
+            {% if shop.dine_in %}<span class="tag tag-gold">🍽️ Dine-In</span>{% endif %}
+            {% if shop.takeaway %}<span class="tag">🥡 Takeaway</span>{% endif %}
+            {% if shop.delivery %}<span class="tag tag-primary">🛵 Delivery</span>{% endif %}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function filterShops(q) {
+  document.querySelectorAll('#shopListGrid .card').forEach(c => {
+    c.style.display = c.dataset.name.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+function filterCat(btn, cat) {
+  document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#shopListGrid .card').forEach(c => {
+    c.style.display = (!cat || c.dataset.cat === cat) ? '' : 'none';
+  });
+}
+function filterService(btn, svc) {
+  document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#shopListGrid .card').forEach(c => {
+    c.style.display = c.dataset[svc] === 'true' ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

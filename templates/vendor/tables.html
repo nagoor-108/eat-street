@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Tables — {{ shop.name }}{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block content %}
+<div class="vendor-layout">
+  <aside class="vendor-sidebar">
+    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem">
+      <div class="navbar-logo"><div class="logo-icon">🍴</div><div class="logo-text"><span class="logo-main" style="font-size:0.85rem">DASHBOARD</span><span class="logo-sub">Eat Street</span></div></div>
+    </div>
+    <p class="sidebar-section-label">{{ shop.name }}</p>
+    <ul class="sidebar-nav">
+      <li><a href="{{ url_for('vendor.dashboard') }}"><i class="ri-dashboard-line"></i> Overview</a></li>
+      <li><a href="{{ url_for('vendor.orders', shop_id=shop.id) }}"><i class="ri-file-list-3-line"></i> Orders</a></li>
+      <li><a href="{{ url_for('vendor.tables', shop_id=shop.id) }}" class="active"><i class="ri-table-line"></i> Tables</a></li>
+      <li><a href="{{ url_for('vendor.menu_manage', shop_id=shop.id) }}"><i class="ri-restaurant-line"></i> Menu</a></li>
+      <li><a href="{{ url_for('kitchen.display', shop_id=shop.id) }}"><i class="ri-fire-line"></i> Kitchen</a></li>
+    </ul>
+  </aside>
+  <main class="vendor-main">
+    <h1 style="font-size:1.25rem;font-weight:800;margin-bottom:0.5rem">🪑 Table Management</h1>
+    <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:1.5rem">{{ shop.name }}</p>
+    <!-- Legend -->
+    <div style="display:flex;gap:1.5rem;margin-bottom:1.5rem;font-size:0.82rem">
+      <span style="display:flex;align-items:center;gap:0.4rem"><span style="width:12px;height:12px;border-radius:50%;background:#66BB6A;box-shadow:0 0 8px #66BB6A"></span> Available</span>
+      <span style="display:flex;align-items:center;gap:0.4rem"><span style="width:12px;height:12px;border-radius:50%;background:#EF5350;box-shadow:0 0 8px #EF5350"></span> Occupied</span>
+      <span style="display:flex;align-items:center;gap:0.4rem"><span style="width:12px;height:12px;border-radius:50%;background:#FFB300;box-shadow:0 0 8px #FFB300"></span> Reserved</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:1.5rem;align-items:start">
+      <div>
+        <div class="table-grid">
+          {% for table in tables %}
+          <div class="table-cell {{ table.status|lower }}" onclick="selectVendorTable({{ table.id }}, '{{ table.table_number }}', '{{ table.status }}')">
+            <div class="table-status-dot"></div>
+            <div style="font-weight:700">{{ table.table_number }}</div>
+            <div style="font-size:0.65rem">👥 {{ table.capacity }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <!-- Table Actions Panel -->
+      <div style="position:sticky;top:90px">
+        <div class="card" style="padding:1.25rem" id="tablePanel">
+          <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:1rem">Select a table</h3>
+          <p style="font-size:0.82rem;color:var(--text-muted)">Click on any table to manage it.</p>
+        </div>
+        {% if reservations %}
+        <div class="card" style="padding:1.25rem;margin-top:1rem">
+          <h3 style="font-size:0.9rem;font-weight:700;margin-bottom:1rem">📅 Pending Reservations</h3>
+          {% for res in reservations %}
+          <div style="padding:0.75rem;background:var(--bg-surface);border-radius:8px;margin-bottom:0.5rem;font-size:0.82rem;border:1px solid var(--border)" id="res-{{ res.id }}">
+            <div style="font-weight:600">{{ res.guest_name }}</div>
+            <div style="color:var(--text-muted)">{{ res.date }} at {{ res.time }} · {{ res.people_count }} people</div>
+            <div style="color:var(--text-muted);font-size:0.72rem">{{ res.guest_phone }}</div>
+            <button class="btn btn-success btn-sm" style="margin-top:0.5rem" onclick="confirmRes({{ res.id }})">✅ Confirm</button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let currentTableId = null;
+function selectVendorTable(tableId, tableNum, status) {
+  currentTableId = tableId;
+  const panel = document.getElementById('tablePanel');
+  const actions = ['AVAILABLE','OCCUPIED','RESERVED'].filter(s => s !== status)
+    .map(s => `<button class="btn btn-sm w-100" style="margin-bottom:0.4rem;background:${ s==='AVAILABLE'?'rgba(76,175,80,0.15)':s==='OCCUPIED'?'rgba(244,67,54,0.15)':'rgba(255,152,0,0.15)' };border:1px solid ${ s==='AVAILABLE'?'rgba(76,175,80,0.4)':s==='OCCUPIED'?'rgba(244,67,54,0.4)':'rgba(255,152,0,0.4)' };color:var(--text)" onclick="setTableStatus(${tableId},'${s}')">${ s==='AVAILABLE'?'🟢':s==='OCCUPIED'?'🔴':'🟡' } Mark ${s}</button>`).join('');
+  panel.innerHTML = `<h3 style="font-size:0.9rem;font-weight:700;margin-bottom:0.75rem">${tableNum}</h3>
+    <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Current: <strong>${status}</strong></p>
+    ${actions}
+    <a href="/static/qrcodes/${ '{{ shop.shop_code }}' }-${tableNum.replace('T','T')}.png" download class="btn btn-glass btn-sm w-100" style="margin-top:0.5rem">⬇ Download QR</a>`;
+}
+function setTableStatus(tableId, status) {
+  fetch('/vendor/tables/update-status', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({table_id: tableId, status})
+  }).then(r => r.json()).then(d => {
+    if(d.success) { showToast('Table status updated', 'success'); setTimeout(()=>location.reload(), 800); }
+  });
+}
+function confirmRes(resId) {
+  fetch('/vendor/reservations/confirm/' + resId, {method:'POST'})
+    .then(r => r.json()).then(d => {
+      if(d.success) { document.getElementById('res-' + resId).remove(); showToast('Reservation confirmed!', 'success'); }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Vendor Dashboard — Eat Street{% endblock %}
+{% block show_footer %}{% endblock %}
+{% block content %}
+<div class="vendor-layout">
+  <!-- Sidebar -->
+  <aside class="vendor-sidebar">
+    <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);margin-bottom:0.5rem">
+      <div class="navbar-logo">
+        <div class="logo-icon">🍴</div>
+        <div class="logo-text">
+          <span class="logo-main" style="font-size:0.85rem">DASHBOARD</span>
+          <span class="logo-sub">Eat Street</span>
+        </div>
+      </div>
+    </div>
+    <p class="sidebar-section-label">Main</p>
+    <ul class="sidebar-nav">
+      <li><a href="{{ url_for('vendor.dashboard') }}" class="active"><i class="ri-dashboard-line"></i> Overview</a></li>
+    </ul>
+    {% for shop in shops %}
+    <p class="sidebar-section-label">{{ shop.name }}</p>
+    <ul class="sidebar-nav">
+      <li><a href="{{ url_for('vendor.orders', shop_id=shop.id) }}"><i class="ri-file-list-3-line"></i> Orders</a></li>
+      <li><a href="{{ url_for('vendor.tables', shop_id=shop.id) }}"><i class="ri-table-line"></i> Tables</a></li>
+      <li><a href="{{ url_for('vendor.menu_manage', shop_id=shop.id) }}"><i class="ri-restaurant-line"></i> Menu</a></li>
+      <li><a href="{{ url_for('kitchen.display', shop_id=shop.id) }}"><i class="ri-fire-line"></i> Kitchen</a></li>
+    </ul>
+    {% endfor %}
+    <p class="sidebar-section-label" style="margin-top:auto">Account</p>
+    <ul class="sidebar-nav">
+      <li><a href="{{ url_for('auth.logout') }}"><i class="ri-logout-box-line"></i> Logout</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="vendor-main">
+    <div class="flex-between" style="margin-bottom:2rem;flex-wrap:wrap;gap:1rem">
+      <div>
+        <h1 style="font-size:1.5rem;font-weight:800">Welcome, {{ current_user.name.split()[0] }}! 👋</h1>
+        <p style="color:var(--text-muted);font-size:0.875rem">Here's your Eat Street overview</p>
+      </div>
+      <div style="font-size:0.8rem;color:var(--text-muted)">
+        <i class="ri-time-line"></i> <span id="liveClock"></span>
+      </div>
+    </div>
+
+    {% for shop in shops %}
+    {% set s = stats[shop.id] %}
+    <div style="margin-bottom:3rem">
+      <div class="flex-between" style="margin-bottom:1.25rem">
+        <h2 style="font-size:1.1rem;font-weight:700">{{ shop.name }}
+          <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;margin-left:0.5rem">{{ shop.shop_code }}</span>
+        </h2>
+        <div style="display:flex;gap:0.5rem">
+          <a href="{{ url_for('kitchen.display', shop_id=shop.id) }}" class="btn btn-primary btn-sm">
+            <i class="ri-fire-line"></i> Kitchen
+          </a>
+          <a href="{{ url_for('vendor.orders', shop_id=shop.id) }}" class="btn btn-glass btn-sm">All Orders</a>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid-4" style="margin-bottom:1.5rem">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(255,59,0,0.1);color:var(--primary)">📦</div>
+          <div class="stat-value">{{ s.orders }}</div>
+          <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(255,152,0,0.1);color:var(--warning)">⏳</div>
+          <div class="stat-value" style="color:var(--warning)">{{ s.pending }}</div>
+          <div class="stat-label">Pending</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(76,175,80,0.1);color:var(--success)">₹</div>
+          <div class="stat-value" style="color:var(--success)">{{ s.revenue|int }}</div>
+          <div class="stat-label">Revenue</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(255,179,0,0.1);color:var(--gold)">🪑</div>
+          <div class="stat-value" style="color:var(--gold)">{{ s.active_tables }}</div>
+          <div class="stat-label">Active Tables</div>
+        </div>
+      </div>
+
+      <!-- Recent Orders -->
+      <div class="card" style="padding:1.25rem;margin-bottom:1.5rem">
+        <div class="flex-between" style="margin-bottom:1rem">
+          <h3 style="font-size:0.9rem;font-weight:700">Recent Orders</h3>
+          <a href="{{ url_for('vendor.orders', shop_id=shop.id) }}" class="btn btn-glass btn-sm">View All</a>
+        </div>
+        {% set recent = shop.orders|sort(attribute='created_at', reverse=True) %}
+        {% if recent %}
+        <div style="overflow-x:auto">
+          <table style="width:100%;font-size:0.82rem;border-collapse:collapse">
+            <thead>
+              <tr style="color:var(--text-muted)">
+                <th style="text-align:left;padding:0.5rem;border-bottom:1px solid var(--border)">Order</th>
+                <th style="text-align:left;padding:0.5rem;border-bottom:1px solid var(--border)">Type</th>
+                <th style="text-align:left;padding:0.5rem;border-bottom:1px solid var(--border)">Amount</th>
+                <th style="text-align:left;padding:0.5rem;border-bottom:1px solid var(--border)">Status</th>
+                <th style="text-align:left;padding:0.5rem;border-bottom:1px solid var(--border)">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in recent[:8] %}
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.03)">
+                <td style="padding:0.6rem 0.5rem;font-weight:600">#{{ order.order_number }}</td>
+                <td style="padding:0.6rem 0.5rem">
+                  <span class="badge badge-{{ order.order_type|lower|replace('_','-') }}">
+                    {{ '🛵' if order.order_type=='DELIVERY' else ('🥡' if order.order_type=='TAKEAWAY' else '🍽️') }}
+                    {{ order.order_type }}
+                  </span>
+                </td>
+                <td style="padding:0.6rem 0.5rem;font-weight:700;color:var(--primary)">₹{{ order.total_amount|int }}</td>
+                <td style="padding:0.6rem 0.5rem">
+                  <span class="badge badge-{{ order.status|lower }}">{{ order.status }}</span>
+                </td>
+                <td style="padding:0.6rem 0.5rem">
+                  {% if order.status == 'PENDING' %}
+                  <button class="btn btn-primary btn-sm" onclick="updateOrderStatus({{ order.id }}, 'ACCEPTED')">Accept</button>
+                  {% elif order.status == 'ACCEPTED' %}
+                  <button class="btn btn-warning btn-sm" onclick="updateOrderStatus({{ order.id }}, 'PREPARING')">Prepare</button>
+                  {% elif order.status == 'PREPARING' %}
+                  <button class="btn btn-success btn-sm" onclick="updateOrderStatus({{ order.id }}, 'READY')">Ready</button>
+                  {% else %}
+                  <span style="color:var(--text-sub)">—</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <p style="color:var(--text-muted);text-align:center;padding:1.5rem">No orders yet.</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </main>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function updateOrderStatus(orderId, status) {
+  fetch('/vendor/order/update', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({order_id: orderId, status})
+  }).then(r => r.json()).then(d => {
+    if(d.success) { showToast('Order updated: ' + status, 'success'); setTimeout(()=>location.reload(), 1000); }
+  });
+}
+
+// Live clock
+function updateClock() {
+  const now = new Date();
+  document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-IN');
+}
+setInterval(updateClock, 1000);
+updateClock();
+</script>
+{% endblock %}
